@@ -43,7 +43,8 @@ export function buildOrchestrationRecoveryCommand(
     return recoverableArgs ? [executable, ...recoverableArgs] : undefined
   }
   const command =
-    method === 'orchestration.workerStart'
+    method === 'orchestration.workerStart' ||
+    method === 'orchestration.workerStartWithPermissionV1'
       ? 'worker-start'
       : method === 'orchestration.workerStop'
         ? 'worker-stop'

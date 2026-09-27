@@ -30,3 +30,8 @@ export const WorkerStartParams = z.object({
 })
 
 export type WorkerStartInput = z.infer<typeof WorkerStartParams>
+
+// A legacy caller must never have a requested permission silently stripped.
+export const LegacyWorkerStartParams = WorkerStartParams.extend({
+  permissionMode: z.never().optional()
+})

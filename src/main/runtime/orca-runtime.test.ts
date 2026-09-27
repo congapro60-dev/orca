@@ -14542,6 +14542,97 @@ describe('OrcaRuntimeService', () => {
     )
   })
 
+  it('launches a READ_ONLY Codex worker without inheriting global YOLO args', async () => {
+    setPlatform('win32')
+    const spawn = vi.fn().mockResolvedValue({ id: 'pty-read-only' })
+    const runtime = new OrcaRuntimeService({
+      ...store,
+      getSettings: () => ({
+        ...store.getSettings(),
+        disabledTuiAgents: [],
+        terminalWindowsShell: 'cmd.exe',
+        agentCmdOverrides: {},
+        agentDefaultArgs: { codex: '--dangerously-bypass-approvals-and-sandbox' },
+        agentDefaultEnv: {}
+      })
+    })
+    runtime.setPtyController({
+      spawn,
+      write: () => true,
+      kill: () => true,
+      getForegroundProcess: async () => null
+    })
+
+    await runtime.createTerminal(`path:${TEST_WORKTREE_PATH}`, {
+      startupAgent: 'codex',
+      workerExecutionPermission: 'READ_ONLY'
+    })
+
+    const command = spawn.mock.calls[0]?.[0]?.command as string | undefined
+    expect(command).toBe('codex "--sandbox" "read-only" "--ask-for-approval" "never"')
+    expect(command).not.toContain('dangerously')
+    expect(markCodexProjectTrustedMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects session launch preferences that could replace READ_ONLY flags', async () => {
+    const spawn = vi.fn().mockResolvedValue({ id: 'pty-unsafe' })
+    const runtime = new OrcaRuntimeService({
+      ...store,
+      getSettings: () => ({
+        ...store.getSettings(),
+        disabledTuiAgents: [],
+        agentCmdOverrides: {},
+        agentDefaultArgs: { codex: '--dangerously-bypass-approvals-and-sandbox' },
+        agentDefaultEnv: {}
+      })
+    })
+    runtime.setPtyController({
+      spawn,
+      write: () => true,
+      kill: () => true,
+      getForegroundProcess: async () => null
+    })
+
+    await expect(
+      runtime.createTerminal(`path:${TEST_WORKTREE_PATH}`, {
+        startupAgent: 'codex',
+        launchPreferences: { model: 'gpt-5.6-sol' },
+        workerExecutionPermission: 'READ_ONLY'
+      })
+    ).rejects.toThrow(/READ_ONLY requires a local Codex worker/)
+    expect(spawn).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { agentCmdOverrides: { codex: 'codex --profile custom' }, agentDefaultEnv: {} },
+    { agentCmdOverrides: {}, agentDefaultEnv: { codex: { CUSTOM: '1' } } }
+  ])('rejects custom Codex launcher configuration for READ_ONLY', async (settings) => {
+    const spawn = vi.fn().mockResolvedValue({ id: 'pty-unsafe' })
+    const runtime = new OrcaRuntimeService({
+      ...store,
+      getSettings: () => ({
+        ...store.getSettings(),
+        disabledTuiAgents: [],
+        agentDefaultArgs: { codex: '--dangerously-bypass-approvals-and-sandbox' },
+        ...settings
+      })
+    })
+    runtime.setPtyController({
+      spawn,
+      write: () => true,
+      kill: () => true,
+      getForegroundProcess: async () => null
+    })
+
+    await expect(
+      runtime.createTerminal(`path:${TEST_WORKTREE_PATH}`, {
+        startupAgent: 'codex',
+        workerExecutionPermission: 'READ_ONLY'
+      })
+    ).rejects.toThrow(/custom Codex launch/)
+    expect(spawn).not.toHaveBeenCalled()
+  })
+
   // Why: `cursor` on PATH is the Cursor desktop launcher; only `cursor-agent` is
   // the CLI Orca can host (issue #11926).
   it('launches the configured agent CLI for a startupAgent id, not the raw id', async () => {

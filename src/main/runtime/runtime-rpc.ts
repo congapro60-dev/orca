@@ -4,6 +4,8 @@ import { randomBytes } from 'node:crypto'
 import { readdirSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import type { RuntimeMetadata, RuntimeTransportMetadata } from '../../shared/runtime-bootstrap'
+import { createRuntimeTransportMetadata } from '../../shared/runtime-local-transport-metadata'
+export { createRuntimeTransportMetadata } from '../../shared/runtime-local-transport-metadata'
 import type { OrcaRuntimeService } from './orca-runtime'
 import { NETWORK_EXPOSURE_FAILED_GUIDANCE } from './network-exposure-guidance'
 import { writeRuntimeMetadata } from './runtime-metadata'
@@ -470,7 +472,10 @@ export function classifyRuntimeLongPoll(request: RpcRequest): RuntimeLongPollCla
   // Worker start waits for readiness and then verifies the submitted prompt;
   // the complete operation can run for 90–110s. Keep every local transport
   // (Unix sockets and Windows named pipes) alive for that long poll.
-  if (request.method === 'orchestration.workerStart') {
+  if (
+    request.method === 'orchestration.workerStart' ||
+    request.method === 'orchestration.workerStartWithPermissionV1'
+  ) {
     return 'wait'
   }
   if (request.method === 'browser.clientHost.attach') {
@@ -1869,25 +1874,5 @@ export function sweepOrphanedRuntimeSockets(userDataPath: string, ownPid: number
         }
       }
     }
-  }
-}
-
-export function createRuntimeTransportMetadata(
-  userDataPath: string,
-  pid: number,
-  platform: NodeJS.Platform,
-  runtimeId = 'runtime'
-): RuntimeTransportMetadata {
-  const endpointSuffix = runtimeId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 4) || 'rt'
-  if (platform === 'win32') {
-    return {
-      kind: 'named-pipe',
-      // Why: named pipes lack the chmod hardening of Unix sockets; a per-runtime suffix avoids a stable, guessable endpoint name.
-      endpoint: `\\\\.\\pipe\\orca-${pid}-${endpointSuffix}`
-    }
-  }
-  return {
-    kind: 'unix',
-    endpoint: join(userDataPath, `o-${pid}-${endpointSuffix}.sock`)
   }
 }

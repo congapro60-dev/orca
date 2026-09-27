@@ -582,6 +582,7 @@ import {
   buildAgentResumeStartupPlan,
   buildAgentStartupPlan
 } from '../../shared/tui-agent-startup'
+import { resolveStartupShell, tokenizeStartupCommand } from '../../shared/tui-agent-startup-shell'
 import { repoIsRemote } from '../../shared/agent-launch-remote'
 import {
   isAgentForegroundWrapperProcess,
@@ -1632,6 +1633,7 @@ type TerminalCreateOptions = {
   // guessing a command, and the runtime builds the configured launch.
   startupAgent?: TuiAgent
   launchPreferences?: AgentLaunchPreferences
+  workerExecutionPermission?: 'READ_ONLY'
   terminalColorQueryReplies?: TerminalOscColorQueryReplyColors
   viewMode?: 'terminal' | 'chat'
   startupCommandDelivery?: WorktreeStartupLaunch['startupCommandDelivery']
@@ -19137,6 +19139,23 @@ export class OrcaRuntimeService {
     }
   }
 
+  validateOrchestrationReadOnlyCodexLauncher(): void {
+    this.validateOrchestrationAgentLauncher('codex')
+    const settings = this.store?.getSettings()
+    if (settings?.agentCmdOverrides?.codex?.trim()) {
+      throw new OrchestrationError(
+        'agent_unconfigured',
+        'READ_ONLY cannot use a custom Codex launch command.'
+      )
+    }
+    if (Object.keys(settings?.agentDefaultEnv?.codex ?? {}).length > 0) {
+      throw new OrchestrationError(
+        'agent_unconfigured',
+        'READ_ONLY cannot use custom Codex launch environment variables.'
+      )
+    }
+  }
+
   resolveTerminalPane(paneKey: string, expectedWorktreeId?: string): RuntimeTerminalResolvePane {
     // Why: the renderer context menu only knows the stable pane key; main owns
     // the runtime terminal handle that agents and CLI commands can address.
@@ -28586,15 +28605,25 @@ export class OrcaRuntimeService {
       return opts
     }
 
+    const readOnlyWorker = opts.workerExecutionPermission === 'READ_ONLY'
+    if (readOnlyWorker) {
+      if (agent !== 'codex' || isRemote || opts.launchPreferences) {
+        throw new OrchestrationError('invalid_placement', 'READ_ONLY requires a local Codex worker.')
+      }
+      this.validateOrchestrationReadOnlyCodexLauncher()
+    }
     const sessionOptions = this.toAgentSessionOptions(opts.launchPreferences)
+    const codexReadOnlyArgs = readOnlyWorker
+      ? '--sandbox read-only --ask-for-approval never'
+      : undefined
     const startupPlan = buildAgentStartupPlan({
       agent,
       prompt: '',
       cmdOverrides: settings.agentCmdOverrides ?? {},
-      agentArgs: resolveTuiAgentLaunchArgs(agent, settings.agentDefaultArgs),
+      agentArgs: codexReadOnlyArgs ?? resolveTuiAgentLaunchArgs(agent, settings.agentDefaultArgs),
       agentEnv: resolveTuiAgentLaunchEnv(agent, settings.agentDefaultEnv),
       sessionOptions,
-      sessionOptionsOverrideAgentArgs: Boolean(sessionOptions),
+      sessionOptionsOverrideAgentArgs: !readOnlyWorker && Boolean(sessionOptions),
       platform,
       shell: queuedShell,
       isRemote,
@@ -28608,8 +28637,23 @@ export class OrcaRuntimeService {
       }
       return opts
     }
+    if (readOnlyWorker) {
+      const tokens = tokenizeStartupCommand(
+        startupPlan.launchCommand,
+        resolveStartupShell(platform, queuedShell)
+      )
+      if (
+        !tokens.ok ||
+        tokens.tokens.join('\0') !==
+          ['codex', '--sandbox', 'read-only', '--ask-for-approval', 'never'].join('\0')
+      ) {
+        throw new OrchestrationError('agent_unconfigured', 'Could not verify Codex READ_ONLY launch flags.')
+      }
+    }
 
-    await this.markWorkspaceTrustedForAgent(agent, workspace.connectionId, workspace.path)
+    if (!readOnlyWorker) {
+      await this.markWorkspaceTrustedForAgent(agent, workspace.connectionId, workspace.path)
+    }
 
     return {
       ...opts,

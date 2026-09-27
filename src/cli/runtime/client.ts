@@ -166,7 +166,10 @@ export class RuntimeClient {
   // to resolve. Without this, a 5 min wait would still die at the 60 s default.
   // See design doc §3.1.
   private resolveMethodTimeoutMs(method: string, params?: unknown): number {
-    if (method === 'orchestration.workerStart') {
+    if (
+      method === 'orchestration.workerStart' ||
+      method === 'orchestration.workerStartWithPermissionV1'
+    ) {
       const requestedValue = getTimeoutMsParam(params)
       const requested = typeof requestedValue === 'number' ? requestedValue : Number(requestedValue)
       if (!isWorkerStartTimeoutWithinTimerLimit(requested)) {

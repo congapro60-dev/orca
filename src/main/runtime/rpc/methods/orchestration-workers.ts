@@ -1,10 +1,14 @@
 import type { TuiAgent } from '../../../../shared/tui-agent'
-import { buildDispatchPreamble } from '../../orchestration/preamble'
 import { OrchestrationError } from '../../orchestration/orchestration-error'
-import { defineMethod, type RpcMethod } from '../core'
+import type { RpcContext } from '../core'
 import { startFederatedWorker } from './orchestration-federated-worker-start'
 import { assertOrchestrationWorktreeCreationSupported } from './orchestration-folder-worktree-placement'
-import { WorkerStartParams } from './orchestration-worker-start-schema'
+import type { WorkerStartInput } from './orchestration-worker-start-schema'
+import type { WorkerPermissionMode } from './orchestration-worker-start-permission-schema'
+import {
+  assertReadOnlyWorkerIsLocal,
+  validateReadOnlyWorkerStartRequest
+} from './orchestration-worker-start-permission-validation'
 import {
   createExistingWorktreeWorkerTerminal,
   createWorkerWorktree,
@@ -21,20 +25,22 @@ import {
 import { failWorkerStartWithReceipt } from './orchestration-worker-start-receipt'
 import { prepareLocalWorkerStart } from './orchestration-worker-start-validation'
 import { resolveDispatchCreator } from './orchestration-dispatch-creator'
+import { sendWorkerDispatchInput } from './orchestration-worker-dispatch-input'
 import { resolveOrchestrationCaller } from './orchestration-run-scope'
 import {
   isWorkerStartTimeoutWithinTimerLimit,
   resolveWorkerStartReadinessTimeoutMs
 } from '../../../../shared/orchestration-timing-budgets'
 
-export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
-  defineMethod({
-    name: 'orchestration.workerStart',
-    params: WorkerStartParams,
-    handler: async (
-      params,
-      { runtime, orchestrationMutation, orchestrationCompatibilityEvidence }
-    ) => {
+export async function startOrchestrationWorker(
+  params: WorkerStartInput,
+  { runtime, orchestrationMutation, orchestrationCompatibilityEvidence }: RpcContext,
+  permissionMode?: WorkerPermissionMode
+) {
+      const readOnlyPermission = { requested: 'READ_ONLY', effective: 'UNKNOWN_UNVERIFIED' }
+      if (permissionMode) {
+        validateReadOnlyWorkerStartRequest({ ...params, permissionMode }, runtime)
+      }
       if (!isWorkerStartTimeoutWithinTimerLimit(params.timeoutMs)) {
         throw new OrchestrationError(
           'invalid_argument',
@@ -96,6 +102,9 @@ export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
         : requestedWorktree === 'current'
           ? await runtime.showManagedTerminalWorkspace(`id:${coordinatorTerminal.worktreeId}`)
           : await runtime.showManagedTerminalWorkspace(requestedWorktree)
+      if (resolvedWorktree) {
+        await assertReadOnlyWorkerIsLocal(runtime, resolvedWorktree.repoId, permissionMode)
+      }
       let explicitTerminal
       if (params.terminal) {
         explicitTerminal = await runtime.showTerminal(params.terminal)
@@ -122,6 +131,7 @@ export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
         terminal: params.terminal ?? null,
         agent: agent ?? null,
         launch: launch.receipt,
+        ...(permissionMode === 'READ_ONLY' ? { permission: readOnlyPermission } : {}),
         timeoutMs: readinessTimeoutMs,
         setup: createsWorktree ? (params.setup ?? 'run') : 'not_applicable',
         setupSource: createsWorktree
@@ -186,6 +196,9 @@ export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
             worktreeId: resolvedWorktree!.id,
             agent: agent as TuiAgent,
             launchPreferences: launch.preferences,
+            ...(permissionMode === 'READ_ONLY'
+              ? { workerExecutionPermission: 'READ_ONLY' as const }
+              : {}),
             taskId: task.id,
             effects
           })
@@ -244,8 +257,11 @@ export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
         })
 
         failedStage = 'dispatch_input'
-        const preamble = buildDispatchPreamble({
-          canDispatchSubWorkers: started.dispatch.depth < runtime.getNestedWorkerMaxDepth(),
+        await sendWorkerDispatchInput({
+          runtime,
+          canDispatchSubWorkers:
+            permissionMode !== 'READ_ONLY' &&
+            started.dispatch.depth < runtime.getNestedWorkerMaxDepth(),
           taskId: task.id,
           dispatchId: started.dispatch.id,
           taskSpec: task.spec,
@@ -253,14 +269,7 @@ export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
           workerHandle: terminalHandle,
           dispatchCapability: capability,
           devMode: params.devMode,
-          cliCommand: runtime.getTerminalOrchestrationCliCommand(terminalHandle)
-        })
-        await runtime.sendTerminalAgentPrompt(terminalHandle, preamble)
-        effects.push({
-          kind: 'dispatch_input',
-          role: 'agent',
-          id: terminalHandle,
-          state: 'accepted'
+          effects
         })
         const worker = db.markWorkerDispatchReady(started.dispatch.id, effects)
         monitorWorkerSetup({
@@ -279,6 +288,7 @@ export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
           stage: worker.stage,
           setup: setupReceipt,
           launch: launch.receipt,
+          ...(permissionMode === 'READ_ONLY' ? { permission: readOnlyPermission } : {}),
           timeoutMs: readinessTimeoutMs,
           effects,
           residualResources: [],
@@ -296,6 +306,4 @@ export const ORCHESTRATION_WORKER_START_METHODS: RpcMethod[] = [
           launch: launch.receipt
         })
       }
-    }
-  })
-]
+}

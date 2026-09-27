@@ -47,6 +47,7 @@ export class OrchestrationMutationExecutor {
     const identity = { callerFingerprint, requestId, method: request.method, payloadHash }
     const atomicWorkerAcceptance =
       request.method === 'orchestration.workerStart' ||
+      request.method === 'orchestration.workerStartWithPermissionV1' ||
       request.method === 'orchestration.federationAttachStart'
     const begun = atomicWorkerAcceptance
       ? (() => {
@@ -193,7 +194,11 @@ function getPendingWorkerStartRecovery(
   method: string,
   receipt: string | null
 ): { dispatchId: string } | undefined {
-  if (method !== 'orchestration.workerStart' || !receipt) {
+  if (
+    (method !== 'orchestration.workerStart' &&
+      method !== 'orchestration.workerStartWithPermissionV1') ||
+    !receipt
+  ) {
     return undefined
   }
   try {

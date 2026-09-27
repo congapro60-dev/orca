@@ -1,8 +1,10 @@
 import { createServer, type Server } from 'node:net'
+import { randomUUID } from 'node:crypto'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { createRuntimeTransportMetadata } from '../../shared/runtime-local-transport-metadata'
 import { ORCHESTRATION_CONTRACT_RUNTIME_CAPABILITY } from '../../shared/protocol-version'
 import { ORCHESTRATION_WORKER_START_CLIENT_GRACE_MS } from '../../shared/orchestration-timing-budgets'
 import { MAX_TIMER_DELAY_MS } from '../../shared/timer-delay'
@@ -40,7 +42,13 @@ describe('RuntimeClient orchestration recovery identity', () => {
 
   it('attaches the request and exact retry identity to a real RPC failure response', async () => {
     const userDataPath = mkdtempSync(join(tmpdir(), 'orca-runtime-recovery-'))
-    const endpoint = join(userDataPath, 'runtime.sock')
+    const transport = createRuntimeTransportMetadata(
+      userDataPath,
+      process.pid,
+      process.platform,
+      randomUUID()
+    )
+    const endpoint = transport.endpoint
     const server = createServer((socket) => {
       let buffer = ''
       socket.setEncoding('utf8')
@@ -79,7 +87,7 @@ describe('RuntimeClient orchestration recovery identity', () => {
       JSON.stringify({
         runtimeId: 'runtime-1',
         pid: 1,
-        transports: [{ kind: 'unix', endpoint }],
+        transports: [transport],
         authToken: 'token',
         startedAt: 1
       })
