@@ -15,6 +15,7 @@ export function createStartingWorkerDispatch(
     launchTokenHash?: string
     retryOf?: string
     runtimeEpoch?: string
+    codexExecution?: { executionId: string; worktree: string }
     federation?: {
       environmentId: string
       environmentName: string
@@ -115,6 +116,20 @@ export function createStartingWorkerDispatch(
          ) VALUES (?, ?, 'starting', 'accepted', ?)`
       )
       .run(id, params.runtimeEpoch ?? null, JSON.stringify(params.startOptions))
+    if (params.codexExecution) {
+      if (!params.runtimeEpoch || params.federation) {
+        throw new Error('Programmatic Codex requires a local runtime epoch')
+      }
+      this.db
+        .prepare(`INSERT INTO codex_runtime_executions
+        (execution_id, dispatch_id, worktree, runtime_epoch) VALUES (?, ?, ?, ?)`)
+        .run(
+          params.codexExecution.executionId,
+          id,
+          params.codexExecution.worktree,
+          params.runtimeEpoch
+        )
+    }
     if (params.federation) {
       this.db
         .prepare(

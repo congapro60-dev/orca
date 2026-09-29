@@ -21,6 +21,7 @@ export function listLegacyWorkerTerminalRecoveryRows(
        FROM dispatch_contexts dc
        INNER JOIN worker_dispatches wd ON wd.dispatch_id = dc.id
        WHERE wd.state IN ('starting', 'ready', 'start_unknown', 'stopping', 'stop_unknown')
+         AND NOT EXISTS (SELECT 1 FROM codex_runtime_executions e WHERE e.dispatch_id = dc.id)
        ORDER BY dc.rowid`
     )
     .all() as LegacyWorkerTerminalRecoveryRow[]
@@ -33,6 +34,16 @@ export function reconcileMissingWorkerTerminal(
 ): WorkerDispatchRow {
   this.db.exec('BEGIN IMMEDIATE')
   try {
+    if (
+      this.db
+        .prepare('SELECT 1 FROM codex_runtime_executions WHERE dispatch_id = ?')
+        .get(dispatchId)
+    ) {
+      throw new OrchestrationError(
+        'capability_unsupported',
+        'Programmatic execution requires runtime reconciliation, not terminal recovery.'
+      )
+    }
     const dispatch = this.getDispatchContextById(dispatchId)
     const worker = this.getWorkerDispatch(dispatchId)
     if (!dispatch || !worker) {

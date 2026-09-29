@@ -1,4 +1,12 @@
-import { spawn, type ChildProcess, type ChildProcessWithoutNullStreams } from 'node:child_process'
+import type {
+  ProcessSpawnImplementation,
+  PipedProcessHandle
+} from '../../shared/child-process/run-process'
+import {
+  killCodexAppServerProcessTree,
+  spawnThroughProcessBoundary
+} from './codex-app-server-process'
+export { killCodexAppServerProcessTree } from './codex-app-server-process'
 import { waitForProcessExitUntil } from './codex-process-exit-deadline'
 import { stderrIndicatesMissingAppServer } from './codex-app-server-capability-signal'
 import { withCliRuntimeOnPath } from '../../shared/node-cli-command-resolution'
@@ -24,11 +32,15 @@ export type CodexAppServerInvocation = {
   cliPath: string | null
   /** Overlay applied on top of the inherited environment (e.g. CODEX_HOME). */
   env?: Record<string, string>
+  inheritEnv?: boolean
   /** Env keys stripped from the inherited environment before spawn (e.g. an
    *  inherited CODEX_HOME, so a default-home grant runs against the real ~/.codex). */
   envToDelete?: readonly string[]
   /** Whole-session deadline. The codex child is SIGKILLed when it lapses. */
   timeoutMs: number
+  cwd?: string
+  signal?: AbortSignal
+  onNotification?: (method: string, params: unknown) => void
 }
 
 /** Codex-side absence of the requested app-server RPC surface (old CLI without
@@ -53,7 +65,9 @@ export function isCodexAppServerUnsupportedError(error: unknown): boolean {
 }
 
 type JsonRpcResponse = {
-  id?: number
+  id?: number | string
+  method?: string
+  params?: unknown
   result?: unknown
   error?: { code?: number; message?: string }
 }
@@ -67,42 +81,6 @@ const JSON_RPC_METHOD_NOT_FOUND = -32601
 const STDERR_TAIL_MAX_BYTES = 8192
 const STDOUT_LINE_MAX_BYTES = 1024 * 1024
 
-export function killCodexAppServerProcessTree(
-  child: Pick<ChildProcess, 'pid' | 'kill'>,
-  options: { platform?: NodeJS.Platform; spawnImpl?: typeof spawn } = {}
-): void {
-  const platform = options.platform ?? process.platform
-  const spawnImpl = options.spawnImpl ?? spawn
-  if (platform === 'win32' && child.pid) {
-    try {
-      // Why: npm-installed Codex runs behind cmd.exe; killing only that wrapper
-      // leaves the app-server child alive after a timeout or failed shutdown.
-      const killer = spawnImpl('taskkill', ['/pid', String(child.pid), '/t', '/f'], {
-        stdio: 'ignore',
-        windowsHide: true
-      })
-      let fellBack = false
-      const killDirectChild = (): void => {
-        if (!fellBack) {
-          fellBack = true
-          child.kill('SIGKILL')
-        }
-      }
-      killer.on('error', killDirectChild)
-      killer.on('exit', (code) => {
-        if (code !== 0) {
-          killDirectChild()
-        }
-      })
-      killer.unref()
-      return
-    } catch {
-      // Fall through to the direct-child best effort when taskkill cannot start.
-    }
-  }
-  child.kill('SIGKILL')
-}
-
 function isMethodNotFoundError(error: { code?: number; message?: string }): boolean {
   return error.code === JSON_RPC_METHOD_NOT_FOUND || /method not found/i.test(error.message ?? '')
 }
@@ -115,11 +93,15 @@ function isMethodNotFoundError(error: { code?: number; message?: string }): bool
 export async function runCodexAppServerSession<T>(
   invocation: CodexAppServerInvocation,
   body: (rpc: CodexAppServerRpc) => Promise<T>,
-  spawnImpl: typeof spawn = spawn
+  spawnImpl: ProcessSpawnImplementation = spawnThroughProcessBoundary
 ): Promise<T> {
+  invocation.signal?.throwIfAborted()
   // Why: a default-home grant must run against the real ~/.codex, so strip an
   // inherited CODEX_HOME (envToDelete) after applying the overlay, not before.
-  const childEnv: NodeJS.ProcessEnv = { ...process.env, ...invocation.env }
+  const childEnv: NodeJS.ProcessEnv = {
+    ...(invocation.inheritEnv === false ? {} : process.env),
+    ...invocation.env
+  }
   for (const key of invocation.envToDelete ?? []) {
     delete childEnv[key]
   }
@@ -127,19 +109,26 @@ export async function runCodexAppServerSession<T>(
     ? withCliRuntimeOnPath(invocation.cliPath, childEnv)
     : childEnv
   const child = spawnImpl(invocation.command, invocation.args, {
+    cwd: invocation.cwd,
     env: pairedEnv,
     stdio: ['pipe', 'pipe', 'pipe'],
     windowsHide: true
-  }) as ChildProcessWithoutNullStreams
+  }) as PipedProcessHandle
 
   let stderrTail = ''
   let exited = false
   let nextRequestId = 1
   let timedOut = false
+  let sessionError: Error | null = null
   const pending = new Map<
     number,
     { resolve: (r: JsonRpcResponse) => void; reject: (e: Error) => void }
   >()
+  let rejectSession: (error: Error) => void = () => {}
+  const sessionFailure = new Promise<never>((_resolve, reject) => {
+    rejectSession = reject
+  })
+  void sessionFailure.catch(() => {})
 
   const exitPromise = new Promise<void>((resolve) => {
     child.on('exit', () => {
@@ -195,6 +184,20 @@ export async function runCodexAppServerSession<T>(
       } catch {
         continue
       }
+      if (message.method) {
+        if (message.id !== undefined) {
+          failPending(
+            new Error(`codex app-server requires unsupported interaction: ${message.method}`)
+          )
+        } else {
+          try {
+            invocation.onNotification?.(message.method, message.params)
+          } catch (error) {
+            failPending(error instanceof Error ? error : new Error(String(error)))
+          }
+        }
+        continue
+      }
       if (typeof message.id === 'number' && pending.has(message.id)) {
         const waiter = pending.get(message.id)!
         pending.delete(message.id)
@@ -204,16 +207,14 @@ export async function runCodexAppServerSession<T>(
   })
 
   function failPending(error: Error): void {
+    sessionError ??= error
+    rejectSession(error)
     for (const waiter of pending.values()) {
       waiter.reject(error)
     }
     pending.clear()
   }
 
-  let rejectDeadline: (error: Error) => void = () => {}
-  const deadlinePromise = new Promise<never>((_resolve, reject) => {
-    rejectDeadline = reject
-  })
   const deadline = setTimeout(() => {
     timedOut = true
     const error = new CodexAppServerTimeoutError(
@@ -221,8 +222,15 @@ export async function runCodexAppServerSession<T>(
     )
     killCodexAppServerProcessTree(child)
     failPending(error)
-    rejectDeadline(error)
   }, invocation.timeoutMs)
+  const abort = (): void => {
+    failPending(new Error('codex app-server session aborted'))
+    killCodexAppServerProcessTree(child)
+  }
+  invocation.signal?.addEventListener('abort', abort, { once: true })
+  if (invocation.signal?.aborted) {
+    abort()
+  }
 
   function sendLine(payload: Record<string, unknown>): void {
     child.stdin.write(`${JSON.stringify(payload)}\n`)
@@ -241,6 +249,10 @@ export async function runCodexAppServerSession<T>(
   }
 
   async function requestRpc(method: string, params?: Record<string, unknown>): Promise<unknown> {
+    invocation.signal?.throwIfAborted()
+    if (sessionError) {
+      throw sessionError
+    }
     if (spawnError) {
       throw spawnError
     }
@@ -298,7 +310,7 @@ export async function runCodexAppServerSession<T>(
     }
     // Why: the timeout owns the whole callback, including time between RPCs;
     // killing the child alone cannot settle a callback awaiting unrelated work.
-    return await Promise.race([session(), deadlinePromise])
+    return await Promise.race([session(), sessionFailure])
   } catch (error) {
     if (
       error instanceof Error &&
@@ -312,6 +324,7 @@ export async function runCodexAppServerSession<T>(
     }
     throw error
   } finally {
+    invocation.signal?.removeEventListener('abort', abort)
     try {
       child.stdin.end()
     } catch {

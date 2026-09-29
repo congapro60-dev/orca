@@ -7,6 +7,7 @@ import {
 import { isEquivalentPaneKey } from '../pane-key-match'
 import type { OrchestrationDb } from '../orchestration-db'
 import { reconcileTaskAfterDispatchInterruption } from '../dispatch-context/task-dispatch-reconciliation'
+import { assertTerminalDispatch } from './programmatic-dispatch-fence'
 
 export function isDispatchProcessCurrent(
   this: OrchestrationDb,
@@ -36,6 +37,7 @@ export function beginWorkerStop(
   | ({ disposition: 'context_only' } & ContextOnlyDispatchReleaseResult) {
   this.db.exec('BEGIN IMMEDIATE')
   try {
+    assertTerminalDispatch(this, dispatchId)
     const dispatch = this.getDispatchContextById(dispatchId)
     const worker = this.getWorkerDispatch(dispatchId)
     if (!dispatch) {

@@ -2,9 +2,23 @@
 
 Status: approved-for-autonomous-build. Owner's `C:\Users\ADMIN\.codex\attachments\7d151ad2-5fdb-4b5c-a597-44ae641ec69a\pasted-text-1.txt` supersedes the earlier A1-only scope below. Phase gates 0–6 and experimental Phase 7 are authorized; no push/deploy, global Codex security change, trust expansion, secret extraction, protected-WIP destruction, or FULL_ACCESS. C:\oa is the implementation worktree; ORCA/Control Core remains canonical authority and Codex is a runtime. Each phase requires deterministic, integration, live (where applicable), and fresh-context review evidence before its local checkpoint commit. The older Slice A record below is historical context, not a current scope limit.
 
-Current phase: 0 — freeze/checkpoint. Evidence root: `C:\Users\ADMIN\Documents\Codex\orca-alpha-evidence\2026-09-27_13-51-27`. Phase 0 revalidates protected WIP, current source/build, diff/secret review, then local checkpoint. Phase 1 selects programmatic Codex app-server (subject to installed-version proof), integrates Orca-native Run/Task/Dispatch and completion/restart, then live canary. Phases 2–6 follow the owner's detailed master plan; Phase 7 cannot invalidate a certified Phase 6. See external `MASTER_EXECUTION_STATUS.md` for live gate state.
+Current phase: 1 — programmatic Codex runtime; Phase 0 checkpoint `d74f4664`. Evidence root: `C:\Users\ADMIN\Documents\Codex\orca-alpha-evidence\2026-09-27_13-51-27`. Phase 1 integrates Orca-native Run/Task/Dispatch and completion/restart, then live canary. Phases 2–6 follow the owner's detailed master plan; Phase 7 cannot invalidate a certified Phase 6. See external `MASTER_EXECUTION_STATUS.md` for live gate state.
+
+## Owner-added objective: Vietnamese localization (2026-09-27)
+
+Owner explicitly requests Vietnamese UI because the English interface is difficult to use. Add to the product goal; implement when the Phase 4 daily-driver UI is ready, not by delaying the current runtime gate. Reuse Orca's localization mechanism. First cover project/task/session navigation, task composer, permissions, Start/Cancel, progress states, result/evidence, actionable errors, onboarding and relevant settings. Preserve code/API/model names and raw technical errors with understandable Vietnamese guidance alongside them. Language selection must persist across restart. Follow with broader native UI coverage; record any untranslated areas rather than claiming whole-app localization from a partial catalog. Verify representative screens and language persistence before reporting this objective complete. No global Codex configuration change.
 
 ## Prior Slice A plan (superseded where scope conflicts)
+
+## Phase 1 implementation contract (2026-09-27)
+
+- Phase 0 checkpoint: `d74f4664`. Substrate: installed Codex app-server JSONL; reuse `runCodexAppServerSession` framing/deadline/reap and the shared child-process boundary. Extend transport with cwd, notifications and cancellation/failure propagation; do not revive TUI worker permission capability.
+- Adapter V0 owns only runtime execution identity/status/events/result, never Orca Task authority. Native Orca DB owns Run/Task/Dispatch; a persistent execution linkage joins one Dispatch to one execution. No worker_done hook is canonical completion.
+- Start only from host-resolved absolute executable, explicit canonical worktree and dedicated CODEX_HOME. Read-only mode plus approval never; verify returned sandbox/cwd before turn/start; no fabricated actual model. Reject requests for interaction. No global config/trust edit or credential read.
+- Deterministic fake-protocol tests must cover notification/request ID collisions, early process exit, timeout/cancel, receipt policy mismatch, bounded events/result, and durable terminal state. Live/restart proof is mandatory before Phase 1 PASS; auth/quota failure is not model success.
+- Current live diagnostic after v0.158 update: thread/turn policy confirmed; turn failed with routing discovery 401. Managed account refresh returned account=null. Official dedicated-profile login started; awaiting owner sign-in. Native integration may be built/tested while live auth is unresolved, but no Phase 1 certification until real canary and write denial pass.
+
+### Historical A1 scope
 
 Status: approved-A1-only; owner authorized completing Slice A with a dedicated profile and the inherited Interrupt hook explicitly disabled. F1/F2 and UI are out of scope for this iteration even if A0–A10 pass.
 Source of truth: attached user request `Văn bản đã dán.txt`; current `ce4df077` source and installed Orca v1.4.192.

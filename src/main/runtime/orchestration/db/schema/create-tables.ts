@@ -1,9 +1,11 @@
 import type { OrchestrationDb } from '../orchestration-db'
 import { createCoreTablesSql } from './create-core-tables-sql'
 import { createGraphTablesSql } from './create-graph-tables-sql'
+import { createCodexExecutionTablesSql } from './create-codex-execution-tables-sql'
 
 export function createTables(this: OrchestrationDb): void {
   this.db.exec(`${createCoreTablesSql()}\n${createGraphTablesSql()}`)
+  this.db.exec(createCodexExecutionTablesSql())
   this.createMailboxDeliveryIndexesIfPossible()
 }
 

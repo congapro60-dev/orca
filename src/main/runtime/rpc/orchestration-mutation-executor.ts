@@ -48,6 +48,7 @@ export class OrchestrationMutationExecutor {
     const atomicWorkerAcceptance =
       request.method === 'orchestration.workerStart' ||
       request.method === 'orchestration.workerStartWithPermissionV1' ||
+      request.method === 'orchestration.codexStartV1' ||
       request.method === 'orchestration.federationAttachStart'
     const begun = atomicWorkerAcceptance
       ? (() => {
@@ -196,7 +197,8 @@ function getPendingWorkerStartRecovery(
 ): { dispatchId: string } | undefined {
   if (
     (method !== 'orchestration.workerStart' &&
-      method !== 'orchestration.workerStartWithPermissionV1') ||
+      method !== 'orchestration.workerStartWithPermissionV1' &&
+      method !== 'orchestration.codexStartV1') ||
     !receipt
   ) {
     return undefined

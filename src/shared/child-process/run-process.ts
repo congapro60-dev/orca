@@ -2,6 +2,7 @@ import {
   spawn as nodeSpawn,
   spawnSync as nodeSpawnSync,
   type ChildProcess,
+  type ChildProcessWithoutNullStreams,
   type SpawnOptions as NodeSpawnOptions
 } from 'node:child_process'
 import { buildWindowsCmdShimCommandLine, isCmdInterpretedProgram } from './windows-command-line'
@@ -10,6 +11,9 @@ import { forceTerminateProcessTree, signalProcessTree } from './process-tree-ter
 import { createOutputSink } from './bounded-output-sink'
 
 export type ChildProcessHandle = ChildProcess
+export type PipedProcessHandle = ChildProcessWithoutNullStreams
+export type ProcessSpawnImplementation = typeof nodeSpawn
+export type ProcessSpawnOptions = NodeSpawnOptions
 
 export type SpawnedProcess = ChildProcess
 

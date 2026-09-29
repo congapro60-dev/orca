@@ -14,6 +14,7 @@ import { ORCHESTRATION_TASK_HANDLERS } from './orchestration/task-handlers'
 import { ORCHESTRATION_WORKER_LAUNCH_HANDLER } from './orchestration/worker-launch-handler'
 import { ORCHESTRATION_WORKER_OBSERVATION_HANDLERS } from './orchestration/worker-observation-handlers'
 import { ORCHESTRATION_WORKER_TERMINAL_HANDLERS } from './orchestration/worker-terminal-handlers'
+import { ORCHESTRATION_CODEX_HANDLERS } from './orchestration/codex-runtime-handlers'
 
 export const ORCHESTRATION_HANDLERS: Record<string, CommandHandler> = {
   ...ORCHESTRATION_RUN_HANDLERS,
@@ -22,6 +23,7 @@ export const ORCHESTRATION_HANDLERS: Record<string, CommandHandler> = {
   ...ORCHESTRATION_INBOX_HANDLERS,
   ...ORCHESTRATION_TASK_HANDLERS,
   ...ORCHESTRATION_WORKER_LAUNCH_HANDLER,
+  ...ORCHESTRATION_CODEX_HANDLERS,
   ...ORCHESTRATION_WORKER_OBSERVATION_HANDLERS,
   ...ORCHESTRATION_WORKER_TERMINAL_HANDLERS,
   ...ORCHESTRATION_DISPATCH_HANDLER,

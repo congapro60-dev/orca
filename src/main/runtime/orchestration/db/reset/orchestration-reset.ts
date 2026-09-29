@@ -1,11 +1,24 @@
 import { LEGACY_RUN_ID } from '../contract-constants'
 import type { OrchestrationDb } from '../orchestration-db'
+import { OrchestrationError } from '../../orchestration-error'
 
 // ── Lifecycle ──
 
 export function runResetTransaction(this: OrchestrationDb, statements: string): void {
   this.db.exec('BEGIN IMMEDIATE')
   try {
+    if (
+      statements.includes('DELETE FROM codex_runtime_executions;') &&
+      this.db
+        .prepare(`SELECT 1 FROM codex_runtime_executions
+          WHERE status IN ('STARTING','RUNNING','OUTCOME_UNKNOWN') LIMIT 1`)
+        .get()
+    ) {
+      throw new OrchestrationError(
+        'execution_active',
+        'Cannot reset active or unverified Codex executions. Cancel or reconcile before reset.'
+      )
+    }
     this.db.exec(statements)
     this.db.exec('COMMIT')
   } catch (error) {
@@ -21,6 +34,9 @@ export function runResetTransaction(this: OrchestrationDb, statements: string): 
 export function resetAll(this: OrchestrationDb): void {
   // Why: retain mutation receipts so a lost reset response cannot replay as a new mutation.
   this.runResetTransaction(`
+    DELETE FROM codex_runtime_results;
+    DELETE FROM codex_runtime_events;
+    DELETE FROM codex_runtime_executions;
     DELETE FROM coordinator_runs;
     DELETE FROM decision_gates;
     DELETE FROM remote_questions;
@@ -51,6 +67,9 @@ export function resetTasks(this: OrchestrationDb): void {
   // Why: messages survive this scope, so question threads are closed rather than deleted — an orphaned
   // question message would otherwise answer as a generic reply while legacy acknowledgment rejects it.
   this.runResetTransaction(`
+    DELETE FROM codex_runtime_results;
+    DELETE FROM codex_runtime_events;
+    DELETE FROM codex_runtime_executions;
     DELETE FROM coordinator_runs;
     DELETE FROM decision_gates;
     DELETE FROM remote_questions;

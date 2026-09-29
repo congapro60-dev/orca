@@ -9,28 +9,35 @@ export function markWorkerDispatchReady(
 ): WorkerDispatchRow {
   this.db.exec('BEGIN IMMEDIATE')
   try {
-    const dispatch = this.getDispatchContextById(dispatchId)
-    const worker = this.getWorkerDispatch(dispatchId)
-    if (!dispatch || dispatch.status !== 'pending' || worker?.state !== 'starting') {
-      throw new OrchestrationError('dispatch_inactive', `Dispatch ${dispatchId} is not starting.`)
-    }
-    this.db
-      .prepare("UPDATE dispatch_contexts SET status = 'dispatched' WHERE id = ?")
-      .run(dispatchId)
-    this.db
-      .prepare(
-        `UPDATE worker_dispatches
-         SET state = 'ready', stage = 'input_accepted',
-             effects = COALESCE(?, effects), updated_at = datetime('now')
-         WHERE dispatch_id = ?`
-      )
-      .run(effects ? JSON.stringify(effects) : null, dispatchId)
+    const result = markWorkerDispatchReadyInTransaction.call(this, dispatchId, effects)
     this.db.exec('COMMIT')
-    return this.getWorkerDispatch(dispatchId) as WorkerDispatchRow
+    return result
   } catch (error) {
     this.db.exec('ROLLBACK')
     throw error
   }
+}
+
+export function markWorkerDispatchReadyInTransaction(
+  this: OrchestrationDb,
+  dispatchId: string,
+  effects?: unknown[]
+): WorkerDispatchRow {
+  const dispatch = this.getDispatchContextById(dispatchId)
+  const worker = this.getWorkerDispatch(dispatchId)
+  if (!dispatch || dispatch.status !== 'pending' || worker?.state !== 'starting') {
+    throw new OrchestrationError('dispatch_inactive', `Dispatch ${dispatchId} is not starting.`)
+  }
+  this.db.prepare("UPDATE dispatch_contexts SET status = 'dispatched' WHERE id = ?").run(dispatchId)
+  this.db
+    .prepare(
+      `UPDATE worker_dispatches
+         SET state = 'ready', stage = 'input_accepted',
+             effects = COALESCE(?, effects), updated_at = datetime('now')
+         WHERE dispatch_id = ?`
+    )
+    .run(effects ? JSON.stringify(effects) : null, dispatchId)
+  return this.getWorkerDispatch(dispatchId) as WorkerDispatchRow
 }
 
 export function failWorkerStart(
@@ -45,43 +52,54 @@ export function failWorkerStart(
 ): WorkerDispatchRow {
   this.db.exec('BEGIN IMMEDIATE')
   try {
-    const dispatch = this.getDispatchContextById(dispatchId)
-    const worker = this.getWorkerDispatch(dispatchId)
-    if (!dispatch || !worker || worker.state !== 'starting') {
-      throw new OrchestrationError('dispatch_inactive', `Dispatch ${dispatchId} is not starting.`)
-    }
-    this.db
-      .prepare(
-        `UPDATE dispatch_contexts
-         SET status = 'failed', last_failure = ?, completed_at = datetime('now'),
-             capability_revoked_at = CASE WHEN ? = 1 THEN capability_revoked_at
-               ELSE COALESCE(capability_revoked_at, datetime('now')) END
-         WHERE id = ?`
-      )
-      .run(reason, options.retainCapability ? 1 : 0, dispatchId)
-    this.db
-      .prepare(
-        `UPDATE worker_dispatches
-         SET state = 'failed', stage = ?, last_error = ?, updated_at = datetime('now')
-         WHERE dispatch_id = ?`
-      )
-      .run(stage, reason, dispatchId)
-    this.db
-      .prepare(
-        `UPDATE tasks SET status = 'failed', completed_at = datetime('now')
-         WHERE id = ? AND NOT EXISTS (
-           SELECT 1 FROM dispatch_contexts
-           WHERE task_id = tasks.id AND status IN ('pending', 'dispatched')
-         )`
-      )
-      .run(dispatch.task_id)
-    this.closeQuestionsForDispatch(dispatchId)
+    const result = failWorkerStartInTransaction.call(this, dispatchId, stage, reason, options)
     this.db.exec('COMMIT')
-    return this.getWorkerDispatch(dispatchId) as WorkerDispatchRow
+    return result
   } catch (error) {
     this.db.exec('ROLLBACK')
     throw error
   }
+}
+
+export function failWorkerStartInTransaction(
+  this: OrchestrationDb,
+  dispatchId: string,
+  stage: string,
+  reason: string,
+  options: { retainCapability?: boolean } = {}
+): WorkerDispatchRow {
+  const dispatch = this.getDispatchContextById(dispatchId)
+  const worker = this.getWorkerDispatch(dispatchId)
+  if (!dispatch || !worker || worker.state !== 'starting') {
+    throw new OrchestrationError('dispatch_inactive', `Dispatch ${dispatchId} is not starting.`)
+  }
+  this.db
+    .prepare(
+      `UPDATE dispatch_contexts
+         SET status = 'failed', last_failure = ?, completed_at = datetime('now'),
+             capability_revoked_at = CASE WHEN ? = 1 THEN capability_revoked_at
+               ELSE COALESCE(capability_revoked_at, datetime('now')) END
+         WHERE id = ?`
+    )
+    .run(reason, options.retainCapability ? 1 : 0, dispatchId)
+  this.db
+    .prepare(
+      `UPDATE worker_dispatches
+         SET state = 'failed', stage = ?, last_error = ?, updated_at = datetime('now')
+         WHERE dispatch_id = ?`
+    )
+    .run(stage, reason, dispatchId)
+  this.db
+    .prepare(
+      `UPDATE tasks SET status = 'failed', completed_at = datetime('now')
+         WHERE id = ? AND NOT EXISTS (
+           SELECT 1 FROM dispatch_contexts
+           WHERE task_id = tasks.id AND status IN ('pending', 'dispatched')
+         )`
+    )
+    .run(dispatch.task_id)
+  this.closeQuestionsForDispatch(dispatchId)
+  return this.getWorkerDispatch(dispatchId) as WorkerDispatchRow
 }
 
 export function markWorkerStartUnknown(
