@@ -1,0 +1,129 @@
+import { realpathSync, statSync } from 'node:fs'
+import { isAbsolute } from 'node:path'
+import { z } from 'zod'
+import type { CoreRuntimeProfile, WorkContextCapsule } from '../../shared/control-core-contract'
+import type { OrchestrationDb } from '../runtime/orchestration/db'
+import { ControlWorkStore, type NewWorkItem } from './control-work-store'
+import {
+  ControlCoreRuntime,
+  type CoreRuntimeEnvironment,
+  type CoreRuntimePort
+} from './control-core-runtime'
+import { ControlCoreVerification, type CoreVerificationPort } from './control-core-verification'
+import { PeerMailbox, type NewPeerMessage } from './peer-mailbox'
+
+/** User workflow boundary; dependency ports are supplied by the owning host, never a worker. */
+export class ControlCoreFacade {
+  private readonly store: ControlWorkStore
+  private readonly workRuntime: ControlCoreRuntime
+  private readonly verification: ControlCoreVerification
+  private readonly mailbox: PeerMailbox
+
+  constructor(
+    native: OrchestrationDb,
+    runtime: CoreRuntimePort,
+    environment: CoreRuntimeEnvironment,
+    verifier: CoreVerificationPort = {
+      verify: async () => {
+        throw new Error('Verification is not configured')
+      }
+    }
+  ) {
+    this.store = new ControlWorkStore(native)
+    this.workRuntime = new ControlCoreRuntime(this.store, runtime, environment)
+    this.verification = new ControlCoreVerification(this.store, runtime, verifier)
+    this.mailbox = new PeerMailbox(this.store)
+  }
+
+  createSession(input: {
+    projectId: string
+    worktree: string
+    objective: string
+    doneWhen?: string[]
+    constraints?: string[]
+  }) {
+    if (!isAbsolute(input.worktree)) {
+      throw new Error('Project workspace must be absolute')
+    }
+    const worktree = realpathSync(input.worktree)
+    if (!statSync(worktree).isDirectory()) {
+      throw new Error('Project workspace must be a directory')
+    }
+    return this.store.create(input.projectId, worktree, input.objective, {
+      doneWhen: input.doneWhen,
+      constraints: input.constraints
+    })
+  }
+
+  openSession(id: string) {
+    for (const item of this.store.items(id)) {
+      if (['WAITING', 'RUNNING', 'BLOCKED'].includes(item.status)) {
+        this.workRuntime.refresh(item.workItemId)
+      }
+    }
+    return {
+      session: this.store.session(id),
+      items: this.store.items(id),
+      events: this.store.events(id)
+    }
+  }
+
+  listSessions(projectId: string) {
+    return this.store.sessions(projectId)
+  }
+  item(id: string) {
+    return this.store.item(id)
+  }
+  events(sessionId: string, after = 0) {
+    return this.store.events(sessionId, after)
+  }
+  addBranch(sessionId: string, input: NewWorkItem) {
+    return this.store.addItem(sessionId, this.store.session(sessionId).rootWorkItemId, input)
+  }
+  start(
+    id: string,
+    expectedRevision: number,
+    context: readonly WorkContextCapsule[] = [],
+    profile: CoreRuntimeProfile = { runtime: 'codex', permissionMode: 'READ_ONLY' }
+  ) {
+    return this.workRuntime.start(id, expectedRevision, context, profile)
+  }
+  refresh(id: string) {
+    return this.workRuntime.refresh(id)
+  }
+  wait(id: string) {
+    return this.workRuntime.wait(id)
+  }
+  cancel(id: string) {
+    return this.workRuntime.cancel(id)
+  }
+  verify(id: string, expectedRevision: number) {
+    return this.verification.verify(id, expectedRevision)
+  }
+
+  publishArtifact(id: string, expectedRevision: number, artifactRef: string) {
+    const ref = z.string().min(1).max(1000).parse(artifactRef)
+    return this.store.transaction(() => {
+      const item = this.store.item(id)
+      if (item.revision !== expectedRevision) {
+        throw new Error('Stale WorkItem revision')
+      }
+      if (item.status === 'VERIFIED') {
+        throw new Error('Verified evidence cannot be rewritten')
+      }
+      const updated = this.store.save({
+        ...item,
+        artifactRefs: [...new Set([...item.artifactRefs, ref])]
+      })
+      this.store.event(updated, 'ARTIFACT_PUBLISHED', { artifactRef: ref })
+      return updated
+    })
+  }
+
+  sendMessage(trustedSenderItemId: string, message: NewPeerMessage) {
+    return this.mailbox.send(trustedSenderItemId, message)
+  }
+  inbox(trustedRecipientItemId: string, afterMessageId?: string) {
+    return this.mailbox.inbox(trustedRecipientItemId, afterMessageId)
+  }
+}

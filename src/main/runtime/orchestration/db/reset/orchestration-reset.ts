@@ -8,6 +8,15 @@ export function runResetTransaction(this: OrchestrationDb, statements: string): 
   this.db.exec('BEGIN IMMEDIATE')
   try {
     if (
+      statements.includes('DELETE FROM tasks;') &&
+      this.db.prepare('SELECT 1 FROM control_work_sessions LIMIT 1').get()
+    ) {
+      throw new OrchestrationError(
+        'control_core_owned',
+        'Logical work sessions must be managed through Control Core; legacy reset is unavailable.'
+      )
+    }
+    if (
       statements.includes('DELETE FROM codex_runtime_executions;') &&
       this.db
         .prepare(`SELECT 1 FROM codex_runtime_executions

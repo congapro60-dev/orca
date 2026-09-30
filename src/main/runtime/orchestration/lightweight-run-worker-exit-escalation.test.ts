@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { OrcaRuntimeService } from '../orca-runtime'
 import { LEGACY_RUN_ID, OrchestrationDb } from './db'
 import { DISPATCH_CIRCUIT_BREAK_FAILURES } from './db/dispatch-context/dispatch-circuit-breaker'
@@ -20,6 +20,13 @@ const WORKER_PTY_ID = 'pty-worker'
 const COORDINATOR_PTY_ID = 'pty-coordinator'
 const WORKER_PANE_KEY = makePaneKey('tab-worker', WORKER_LEAF_ID)
 const COORDINATOR_PANE_KEY = makePaneKey('tab-coordinator', COORDINATOR_LEAF_ID)
+const bootstrapDatabases: OrchestrationDb[] = []
+
+afterEach(() => {
+  for (const db of bootstrapDatabases.splice(0)) {
+    db.close()
+  }
+})
 
 function makeStore() {
   const session: WorkspaceSessionState = getDefaultWorkspaceSession()
@@ -50,6 +57,10 @@ function makeRuntimeWithTwoPanes(): {
   coordinatorHandle: string
 } {
   const runtime = new OrcaRuntimeService(makeStore() as never)
+  // Graph sync must not open an unowned on-disk DB before the test injects its fixture.
+  const bootstrapDb = new OrchestrationDb(':memory:')
+  bootstrapDatabases.push(bootstrapDb)
+  runtime.setOrchestrationDb(bootstrapDb)
   runtime.setPtyController({
     spawn: vi.fn(async () => ({ id: 'never' })),
     write: vi.fn(() => true),
