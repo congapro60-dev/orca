@@ -11,6 +11,13 @@ import {
 } from './control-core-runtime'
 import { ControlCoreVerification, type CoreVerificationPort } from './control-core-verification'
 import { PeerMailbox, type NewPeerMessage } from './peer-mailbox'
+import { TaskJournalStore } from './task-journal'
+import {
+  ControlMemoryStore,
+  type NewCandidateMemory,
+  type MemoryVersion
+} from './control-memory-store'
+import { MemoryPromotionGate, type MemoryPromotionRequest } from './memory-promotion-gate'
 
 /** User workflow boundary; dependency ports are supplied by the owning host, never a worker. */
 export class ControlCoreFacade {
@@ -18,6 +25,7 @@ export class ControlCoreFacade {
   private readonly workRuntime: ControlCoreRuntime
   private readonly verification: ControlCoreVerification
   private readonly mailbox: PeerMailbox
+  private readonly memory: ControlMemoryStore
 
   constructor(
     native: OrchestrationDb,
@@ -33,6 +41,7 @@ export class ControlCoreFacade {
     this.workRuntime = new ControlCoreRuntime(this.store, runtime, environment)
     this.verification = new ControlCoreVerification(this.store, runtime, verifier)
     this.mailbox = new PeerMailbox(this.store)
+    this.memory = new ControlMemoryStore(this.store)
   }
 
   createSession(input: {
@@ -71,11 +80,45 @@ export class ControlCoreFacade {
   listSessions(projectId: string) {
     return this.store.sessions(projectId)
   }
+  createMemoryCandidate(input: NewCandidateMemory) {
+    return this.memory.create(input)
+  }
+  memoryCandidates(projectId: string) {
+    return this.memory.list(projectId)
+  }
+  rejectMemoryCandidate(id: string, expected: MemoryVersion) {
+    return this.memory.reject(id, expected)
+  }
+  canonicalMemory(projectId: string, key: string) {
+    return this.memory.canonical(projectId, key)
+  }
+  promoteMemory(input: MemoryPromotionRequest) {
+    return new MemoryPromotionGate(this.memory).promote(input)
+  }
   item(id: string) {
     return this.store.item(id)
   }
   events(sessionId: string, after = 0) {
     return this.store.events(sessionId, after)
+  }
+  journal(sessionId: string) {
+    const journals = new TaskJournalStore(this.store)
+    return (
+      journals.get(sessionId) ??
+      (this.store.session(sessionId).status === 'COMPLETED' ? journals.capture(sessionId) : null)
+    )
+  }
+  recordDecision(sessionId: string, decision: string, evidenceRefs: string[] = []) {
+    const value = z.string().trim().min(1).max(2000).parse(decision)
+    const refs = z.array(z.string().min(1).max(1000)).max(64).parse(evidenceRefs)
+    const session = this.store.session(sessionId)
+    if (session.status !== 'ACTIVE') {
+      throw new Error('Logical session is closed')
+    }
+    this.store.event(this.store.item(session.rootWorkItemId), 'DECISION_RECORDED', {
+      decision: value,
+      evidenceRefs: refs
+    })
   }
   addBranch(sessionId: string, input: NewWorkItem) {
     return this.store.addItem(sessionId, this.store.session(sessionId).rootWorkItemId, input)

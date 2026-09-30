@@ -4,6 +4,7 @@ import type { CodexExecutionRecord } from '../runtime/orchestration/codex-execut
 import type { CoreRuntimePort } from './control-core-runtime'
 import { completionBarrier } from './completion-barrier'
 import type { ControlWorkStore } from './control-work-store'
+import { TaskJournalStore } from './task-journal'
 
 export type CoreVerificationPort = {
   verify: (input: {
@@ -108,5 +109,6 @@ export class ControlCoreVerification {
         "UPDATE control_work_sessions SET status='COMPLETED',updated_at=? WHERE id=? AND status='ACTIVE'"
       )
       .run(new Date().toISOString(), sessionId)
+    new TaskJournalStore(this.store).capture(sessionId)
   }
 }

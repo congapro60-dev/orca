@@ -2,7 +2,7 @@
 
 Status: approved-for-autonomous-build. Owner's `C:\Users\ADMIN\.codex\attachments\7d151ad2-5fdb-4b5c-a597-44ae641ec69a\pasted-text-1.txt` supersedes the earlier A1-only scope below. Phase gates 0–6 and experimental Phase 7 are authorized; no push/deploy, global Codex security change, trust expansion, secret extraction, protected-WIP destruction, or FULL_ACCESS. C:\oa is the implementation worktree; ORCA/Control Core remains canonical authority and Codex is a runtime. Each phase requires deterministic, integration, live (where applicable), and fresh-context review evidence before its local checkpoint commit. The older Slice A record below is historical context, not a current scope limit.
 
-Current phase: 2 — Control Core foundation; Phase 1 checkpoint `8f057ed2`. Evidence root: `C:\Users\ADMIN\Documents\Codex\orca-alpha-evidence\2026-09-27_13-51-27`. Phase 1 programmatic runtime and restart gate passed; Phase 2 implementation is under deterministic/integration validation. Phases 3–6 follow the owner's detailed master plan; Phase 7 cannot invalidate a certified Phase 6. See external `MASTER_EXECUTION_STATUS.md` for live gate state.
+Current phase: 3 — memory/journal foundation; Phase 2 checkpoint `dc866e31`. Evidence root: `C:\Users\ADMIN\Documents\Codex\orca-alpha-evidence\2026-09-27_13-51-27`. Phase 2 passed 600 relevant tests (1 existing Windows skip), typecheck/build/native/lint and independent review. Phases 3–6 follow the owner's detailed master plan; Phase 7 cannot invalidate a certified Phase 6. See external `MASTER_EXECUTION_STATUS.md` for live gate state.
 
 ## Phase 2 implementation contract — approved master plan, 2026-09-29
 
@@ -12,7 +12,7 @@ Phase 1 checkpoint: `8f057ed2`; live gate/review provenance in external `PHASE_1
 
 Owner explicitly requests Vietnamese UI because the English interface is difficult to use. Add to the product goal; implement when the Phase 4 daily-driver UI is ready, not by delaying the current runtime gate. Reuse Orca's localization mechanism. First cover project/task/session navigation, task composer, permissions, Start/Cancel, progress states, result/evidence, actionable errors, onboarding and relevant settings. Preserve code/API/model names and raw technical errors with understandable Vietnamese guidance alongside them. Language selection must persist across restart. Follow with broader native UI coverage; record any untranslated areas rather than claiming whole-app localization from a partial catalog. Verify representative screens and language persistence before reporting this objective complete. No global Codex configuration change.
 
-## Phase 3 implementation contract - queued behind Phase 2 gate
+## Phase 3 implementation contract - active after Phase 2 PASS
 
 Reuse the same OrchestrationDb connection and ControlCoreFacade host boundary. Add a durable TaskJournal that references logical objective, WorkEvents, attempts, artifacts/evidence, verification and explicit decisions; never copy full transcripts. Journal snapshots/versioning must not overwrite historical evidence. Distinguish bounded working context from persisted CandidateMemory and Canonical Memory. Candidates carry project/session identity, statement/kind, source evidence/artifact references, revision, content hash, status and timestamps. Candidate creation validates source ownership/provenance. Runtime-facing mailbox/context does not expose canonical writes.
 

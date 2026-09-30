@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, type Dirent } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -43,20 +43,22 @@ function isTestFile(path: string): boolean {
 
 function collectSourceFiles(root: string): string[] {
   const found: string[] = []
-  let entries: string[]
+  let entries: Dirent[]
   try {
-    entries = readdirSync(root)
+    entries = readdirSync(root, { withFileTypes: true })
   } catch {
     return found
   }
   for (const entry of entries) {
-    if (IGNORED_DIRECTORIES.has(entry)) {
+    if (IGNORED_DIRECTORIES.has(entry.name)) {
       continue
     }
-    const full = join(root, entry)
-    if (statSync(full).isDirectory()) {
+    const full = join(root, entry.name)
+    // Reuse directory metadata on Windows; retain the prior symlink-following behavior.
+    const directory = entry.isSymbolicLink() ? statSync(full).isDirectory() : entry.isDirectory()
+    if (directory) {
       found.push(...collectSourceFiles(full))
-    } else if (SCANNED_EXTENSIONS.some((ext) => entry.endsWith(ext))) {
+    } else if (SCANNED_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
       found.push(full)
     }
   }

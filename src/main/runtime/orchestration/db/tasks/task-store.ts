@@ -98,7 +98,10 @@ export function getTask(
   }
   return this.db
     .prepare(
-      `SELECT t.*,
+      // Explicit columns let SyncDatabase reuse the statement without wildcard schema-cache hazards.
+      `SELECT t.id,t.run_id,t.parent_id,t.created_by_terminal_handle,t.created_by_pane_key,
+         t.created_by_process_incarnation,t.created_by_run_generation,t.task_title,t.display_name,
+         t.spec,t.status,t.deps,t.result,t.created_at,t.completed_at,
          creator.id AS creator_dispatch_id,
          creator.run_id AS creator_dispatch_run_id,
          creator.assignee_pane_key AS creator_dispatch_pane_key,

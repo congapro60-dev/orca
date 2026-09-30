@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type Database from '../../sqlite/sync-database'
 import { DISPATCH_CONTEXT_CLAIM_SQL, OrchestrationDb } from './db'
 import { createRootDispatch } from './db/root-dispatch-test-fixture'
@@ -14,6 +14,35 @@ describe('creator authority lookup performance', () => {
   let db: OrchestrationDb | undefined
 
   afterEach(() => db?.close())
+
+  it('reuses hot lookup statements without caching rows or dropping native columns', () => {
+    db = new OrchestrationDb(':memory:')
+    const run = db.createRun({
+      objective: 'statement reuse',
+      coordinatorHandle: 'core',
+      coordinatorPaneKey: 'core'
+    })
+    const task = db.createTask({ spec: 'hot lookup', runId: run.id })
+    const dispatch = createRootDispatch(db, task.id, 'term-hot', CREATOR_PANE)
+    const sqlite = sqliteFor(db)
+    const expectedTask = sqlite.prepare('SELECT * FROM tasks WHERE id=?').get(task.id)
+    const expectedDispatch = sqlite
+      .prepare('SELECT * FROM dispatch_contexts WHERE id=?')
+      .get(dispatch.id)
+    const prepared = vi.spyOn(sqlite, 'prepare')
+    try {
+      expect(db.getTask(task.id, run.id)).toMatchObject(expectedTask!)
+      expect(db.getActiveDispatchForTerminal('term-hot')).toEqual(expectedDispatch)
+      db.getTask(task.id, run.id)
+      db.getActiveDispatchForTerminal('term-hot')
+      expect(prepared.mock.results[0].value).toBe(prepared.mock.results[2].value)
+      expect(prepared.mock.results[1].value).toBe(prepared.mock.results[3].value)
+      db.failDispatch(dispatch.id, 'fixture terminal failure', { workerProcessExited: true })
+      expect(db.getActiveDispatchForTerminal('term-hot')).toBeUndefined()
+    } finally {
+      prepared.mockRestore()
+    }
+  })
 
   it('uses bounded creator-handle and pane-leaf indexes', () => {
     db = new OrchestrationDb(':memory:')
@@ -108,13 +137,15 @@ describe('creator authority lookup performance', () => {
     for (let index = 0; index < 10; index += 1) {
       db.getTask(workerTask.id, run.id)
     }
+    const observedRunIds: (string | null | undefined)[] = []
     const startedAt = performance.now()
     for (let index = 0; index < 300; index += 1) {
-      expect(db.getTask(workerTask.id, run.id)?.creator_dispatch_run_id).toBe(run.id)
+      observedRunIds.push(db.getTask(workerTask.id, run.id)?.creator_dispatch_run_id)
     }
     const elapsedMs = performance.now() - startedAt
 
     expect(elapsedMs).toBeLessThan(200)
+    expect(observedRunIds).toEqual(Array(300).fill(run.id))
   })
 
   it.each([20_000, 50_000])(
@@ -161,10 +192,12 @@ describe('creator authority lookup performance', () => {
         db.getTask(workerTask.id, run.id)
         db.getActiveDispatchForTerminal('term-creator')
       }
+      const observedTaskCreators: (string | null | undefined)[] = []
+      const observedActiveDispatches: (string | undefined)[] = []
       const startedAt = performance.now()
       for (let index = 0; index < 300; index += 1) {
-        expect(db.getTask(workerTask.id, run.id)?.creator_dispatch_id).toBe(creatorDispatch.id)
-        expect(db.getActiveDispatchForTerminal('term-creator')?.id).toBe(creatorDispatch.id)
+        observedTaskCreators.push(db.getTask(workerTask.id, run.id)?.creator_dispatch_id)
+        observedActiveDispatches.push(db.getActiveDispatchForTerminal('term-creator')?.id)
       }
       const elapsedMs = performance.now() - startedAt
 
@@ -178,6 +211,8 @@ describe('creator authority lookup performance', () => {
         })
       ).toThrow(`Terminal term-creator already has an active dispatch (${creatorDispatch.id}`)
       expect(elapsedMs).toBeLessThan(200)
+      expect(observedTaskCreators).toEqual(Array(300).fill(creatorDispatch.id))
+      expect(observedActiveDispatches).toEqual(Array(300).fill(creatorDispatch.id))
     }
   )
 })

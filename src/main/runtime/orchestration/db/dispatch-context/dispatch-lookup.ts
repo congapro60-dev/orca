@@ -118,8 +118,11 @@ export function findActiveDispatchForAssignee(
 ): DispatchContextRow | undefined {
   const byHandle = this.db
     .prepare(
-      // Why: newest-first like the pane lookups below — an unordered LIMIT 1 could pin a stale row if a handle ever has two active dispatches.
-      `SELECT * FROM dispatch_contexts
+      // Explicit columns permit statement reuse; newest-first still selects the active authority.
+      `SELECT id,run_id,task_id,contract_version,launch_token_hash,assignee_handle,assignee_pane_key,
+         capability_hash,process_incarnation,capability_revoked_at,status,failure_count,last_failure,
+         termination_reason,depth,dispatched_at,completed_at,created_at,last_heartbeat_at
+       FROM dispatch_contexts
        WHERE assignee_handle = ? AND status IN ('pending', 'dispatched')
        ORDER BY rowid DESC LIMIT 1`
     )

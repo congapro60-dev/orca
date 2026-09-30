@@ -53,6 +53,7 @@ export type WorkEventType =
   | 'MESSAGE_SENT'
   | 'JOIN_READY'
   | 'REPLAN_REQUESTED'
+  | 'DECISION_RECORDED'
 export type WorkEvent = {
   sequence: number
   logicalWorkSessionId: string
