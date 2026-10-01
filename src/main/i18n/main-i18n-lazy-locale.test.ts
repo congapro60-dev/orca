@@ -15,7 +15,8 @@ import {
   UI_LANGUAGE_ENGLISH,
   UI_LANGUAGE_JAPANESE,
   UI_LANGUAGE_KOREAN,
-  UI_LANGUAGE_SPANISH
+  UI_LANGUAGE_SPANISH,
+  UI_LANGUAGE_VIETNAMESE
 } from '../../shared/ui-language'
 import {
   ensureMainI18n,
@@ -36,6 +37,11 @@ describe('main-i18n lazy locale loading', () => {
     expect(translateMain('missing.main.key', 'Fallback copy')).toBe('Fallback copy')
     expect(translateMain('menu.file', 'File')).toBe('File')
     expect(translateMain('menu.settings', 'Settings')).toBe('Settings')
+  })
+
+  it('loads the Vietnamese native menu catalog', async () => {
+    expect(await setMainUiLanguage(UI_LANGUAGE_VIETNAMESE)).toBe('vi')
+    expect(translateMain('menu.file', 'File')).toBe('Tệp')
   })
 
   it('lazy-loads the Spanish catalog before changeLanguage resolves', async () => {

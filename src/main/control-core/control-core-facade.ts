@@ -30,7 +30,7 @@ export class ControlCoreFacade {
   constructor(
     native: OrchestrationDb,
     runtime: CoreRuntimePort,
-    environment: CoreRuntimeEnvironment,
+    environment: CoreRuntimeEnvironment | (() => CoreRuntimeEnvironment),
     verifier: CoreVerificationPort = {
       verify: async () => {
         throw new Error('Verification is not configured')

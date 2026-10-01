@@ -22,6 +22,7 @@ import type { BrowserApi } from './api/browser-api'
 import type { CliApi } from './api/cli-install-api'
 import type { CrashReportsApi, FeedbackApi } from './api/crash-report-api'
 import type { DashboardApi, TerminalPreviewApi } from './api/dashboard-api'
+import type { DailyDriverApi } from './api/daily-driver-api'
 import type { DocPreviewApi } from './api/doc-preview-api'
 import type { EmulatorApi } from './api/emulator-api'
 import type { EphemeralVmApi } from './api/ephemeral-vm-api'
@@ -67,6 +68,7 @@ import type { FolderWorkspacesApi, SparsePresetsApi, WorktreeApi } from './api/w
 type Merged<T> = { [K in keyof T]: T[K] }
 
 export type PreloadApi = {
+  dailyDriver: DailyDriverApi
   app: AppApi
   orcaProfiles: OrcaProfileApi
   platform: PlatformApi

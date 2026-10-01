@@ -29,19 +29,28 @@ export class CodexExecutionSupervisor {
   async start(
     taskId: string,
     input: CodexRuntimeRequest,
-    mutationReceipt?: {
-      callerFingerprint: string
-      requestId: string
-      method: string
-      payloadHash: string
-    }
+    mutationReceipt?:
+      | {
+          callerFingerprint: string
+          requestId: string
+          method: string
+          payloadHash: string
+        }
+      | AbortSignal,
+    externalSignal?: AbortSignal
   ): Promise<CodexExecutionRecord> {
+    if (mutationReceipt instanceof AbortSignal) {
+      externalSignal = mutationReceipt
+      mutationReceipt = undefined
+    }
+    externalSignal?.throwIfAborted()
     const request = CodexRuntimeRequestSchema.parse(input)
     const task = this.native.getTask(taskId)
     if (!task || task.spec !== request.prompt) {
       throw new Error('Runtime input must match the native Task specification')
     }
     const prepared = await this.prepare(request)
+    externalSignal?.throwIfAborted()
     const executionId = randomUUID()
     const canonical = {
       ...request,
@@ -51,6 +60,11 @@ export class CodexExecutionSupervisor {
     }
     this.store.accept(taskId, executionId, prepared.worktree, mutationReceipt)
     const preparation = new AbortController()
+    const abortPreparation = () => preparation.abort()
+    externalSignal?.addEventListener('abort', abortPreparation, { once: true })
+    if (externalSignal?.aborted) {
+      preparation.abort()
+    }
     this.preparing.set(executionId, preparation)
     try {
       await this.adapter.start(canonical, {
@@ -83,6 +97,7 @@ export class CodexExecutionSupervisor {
       })
       return this.store.require(executionId)
     } finally {
+      externalSignal?.removeEventListener('abort', abortPreparation)
       this.preparing.delete(executionId)
     }
     const completion = this.adapter

@@ -1,5 +1,14 @@
 import React from 'react'
-import { Bell, BookOpen, CalendarClock, EyeOff, Files, Search, Smartphone } from 'lucide-react'
+import {
+  Bell,
+  BookOpen,
+  CalendarClock,
+  EyeOff,
+  Files,
+  Search,
+  Smartphone,
+  Workflow
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/store'
 import { cn } from '@/lib/utils'
@@ -70,6 +79,7 @@ const SidebarNav = React.memo(function SidebarNav() {
   const openModal = useAppStore((s) => s.openModal)
   const updateSettings = useAppStore((s) => s.updateSettings)
   const activeView = useAppStore((s) => s.activeView)
+  const setActiveView = useAppStore((s) => s.setActiveView)
   const experimentalSidebarButtons = useAppStore(
     (s) =>
       (shouldShowAgentsButton(s.settings) ? 1 : 0) |
@@ -136,6 +146,22 @@ const SidebarNav = React.memo(function SidebarNav() {
         </span>
       </button>
       <SetupGuideSidebarEntry />
+      <button
+        type="button"
+        onClick={() => setActiveView('orca')}
+        aria-current={activeView === 'orca' ? 'page' : undefined}
+        className={cn(
+          'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium tracking-tight transition-colors',
+          activeView === 'orca'
+            ? 'bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground'
+            : 'text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-foreground/8'
+        )}
+      >
+        <Workflow className="size-4 shrink-0" />
+        <span className="flex-1">
+          {translate('auto.components.sidebar.SidebarNav.dailyDriver', 'ORCA Work')}
+        </span>
+      </button>
       <SidebarTaskNavButton />
       {showArtifactsButton ? (
         <ContextMenu>

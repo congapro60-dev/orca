@@ -210,6 +210,7 @@ export class CodexRuntimeAdapterV0 {
           args: [
             'app-server',
             '--stdio',
+            '--config=model_provider="openai"',
             '--disable',
             'apps',
             '--disable',

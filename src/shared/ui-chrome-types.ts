@@ -108,6 +108,7 @@ export type ManualRepoOrderEntry = {
 /** The active top-level section shown in the main content area. */
 export type TopLevelView =
   | 'terminal'
+  | 'orca'
   | 'settings'
   | 'tasks'
   | 'activity'

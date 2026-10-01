@@ -636,6 +636,7 @@ export type UISlice = {
   unacknowledgeAgents: (paneKeys: string[]) => void
   activeView: TopLevelView
   previousViewBeforeTasks:
+    | 'orca'
     | 'terminal'
     | 'settings'
     | 'activity'
@@ -645,6 +646,7 @@ export type UISlice = {
     | 'artifacts'
     | 'mobile'
   previousViewBeforeSettings:
+    | 'orca'
     | 'terminal'
     | 'tasks'
     | 'activity'
@@ -654,6 +656,7 @@ export type UISlice = {
     | 'artifacts'
     | 'mobile'
   previousViewBeforeActivity:
+    | 'orca'
     | 'terminal'
     | 'settings'
     | 'tasks'
@@ -663,6 +666,7 @@ export type UISlice = {
     | 'artifacts'
     | 'mobile'
   previousViewBeforeAutomations:
+    | 'orca'
     | 'terminal'
     | 'settings'
     | 'tasks'
@@ -672,6 +676,7 @@ export type UISlice = {
     | 'artifacts'
     | 'mobile'
   previousViewBeforeSpace:
+    | 'orca'
     | 'terminal'
     | 'settings'
     | 'tasks'
@@ -681,6 +686,7 @@ export type UISlice = {
     | 'artifacts'
     | 'mobile'
   previousViewBeforeSkills:
+    | 'orca'
     | 'terminal'
     | 'settings'
     | 'tasks'
@@ -690,6 +696,7 @@ export type UISlice = {
     | 'artifacts'
     | 'mobile'
   previousViewBeforeMobile:
+    | 'orca'
     | 'terminal'
     | 'settings'
     | 'tasks'
@@ -699,6 +706,7 @@ export type UISlice = {
     | 'skills'
     | 'artifacts'
   previousViewBeforeArtifacts:
+    | 'orca'
     | 'terminal'
     | 'settings'
     | 'tasks'

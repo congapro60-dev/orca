@@ -108,6 +108,35 @@ function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean
 }
 
 describe('Native Codex execution supervisor', () => {
+  it('does not accept or start an execution cancelled during preflight', async () => {
+    const { supervisor, db, task, request, prepare, protocolMethods } = fixture()
+    let release!: (value: {
+      executable: string
+      version: string
+      worktree: string
+      codexHome: string
+    }) => void
+    prepare.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          release = resolve
+        })
+    )
+    const controller = new AbortController()
+    const pending = supervisor.start(task.id, request, undefined, controller.signal)
+    controller.abort()
+    release({
+      executable: request.executablePath,
+      version: 'codex-cli test',
+      worktree: request.worktree,
+      codexHome: request.codexHome
+    })
+    await expect(pending).rejects.toThrow()
+    expect(db.db.prepare('SELECT COUNT(*) AS n FROM codex_runtime_executions').get()?.n).toBe(0)
+    expect(protocolMethods).not.toContain('turn/start')
+    expect(db.getTask(task.id)?.status).toBe('ready')
+  })
+
   it('fences legacy stop/abandon and reset while a programmatic turn is held', async () => {
     const { db, supervisor, task, request } = fixture({ hold: true })
     const row = await supervisor.start(task.id, request)

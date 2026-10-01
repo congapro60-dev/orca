@@ -22,6 +22,11 @@ import { registerStatsHandlers } from '../stats'
 import { registerMemoryHandlers } from '../memory'
 import { registerRateLimitHandlers } from '../rate-limits'
 import { registerRuntimeHandlers } from '../runtime'
+import { getOrcaManagedCodexHomePath } from '../../codex/codex-home-paths'
+import {
+  registerDailyDriverHandlers,
+  setTrustedDailyDriverRendererWebContentsId
+} from '../daily-driver'
 import { registerRuntimeEnvironmentHandlers } from '../runtime-environments'
 import { registerEphemeralVmHandlers } from '../ephemeral-vm'
 import { registerAiVaultHandlers } from '../ai-vault'
@@ -131,6 +136,7 @@ export function registerCoreHandlers(
   setTrustedBrowserRendererWebContentsId(mainWindowWebContentsId)
   setTrustedClipboardRendererWebContentsId(mainWindowWebContentsId)
   setTrustedUIRendererWebContentsId(mainWindowWebContentsId)
+  setTrustedDailyDriverRendererWebContentsId(mainWindowWebContentsId)
   setAgentBrowserBridgeRef(runtime.getAgentBrowserBridge())
   if (registered) {
     return
@@ -212,6 +218,15 @@ export function registerCoreHandlers(
   }
   registerFilesystemWatcherHandlers()
   registerRuntimeHandlers(runtime)
+  registerDailyDriverHandlers(runtime, () => {
+    const homes = codexAccounts.runtimeHomeService
+    const route = homes.getSelectedHostCodexHomeRoute()
+    const selected = homes.resolveSelectedHostAccountCodexHomePathForResume()
+    if (route === 'account-home' && !selected) {
+      throw new Error('Selected Codex account home is unavailable; sign in again')
+    }
+    return selected ?? getOrcaManagedCodexHomePath()
+  })
   registerRuntimeEnvironmentHandlers(store)
   registerEphemeralVmHandlers(store, pluginService)
   registerAiVaultHandlers({

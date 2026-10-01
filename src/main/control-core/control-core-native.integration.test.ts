@@ -90,10 +90,36 @@ function fixture(hold = false) {
   const item = core
     .openSession(session.logicalWorkSessionId)
     .items.find((i) => i.branchId === 'main')!
-  return { f, core, supervisor, session, item, methods }
+  return { f, core, supervisor, session, item, methods, prepare }
 }
 
 describe('Control Core through real native supervisor and adapter with deterministic protocol', () => {
+  it('cancels before native acceptance when preflight is still waiting', async () => {
+    const { f, core, item, methods, prepare } = fixture()
+    const prepared = {
+      executable: f.environment.executablePath,
+      version: 'codex-cli fixture',
+      worktree: f.directory,
+      codexHome: f.environment.codexHome
+    }
+    let release!: (value: typeof prepared) => void
+    prepare.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          release = resolve
+        })
+    )
+    const pending = core.start(item.workItemId, item.revision)
+    await core.cancel(item.workItemId)
+    release(prepared)
+    const cancelled = await pending
+    expect(cancelled.status).toBe('CANCELLED')
+    expect(cancelled.executionId).toBeNull()
+    expect(f.db.getTask(cancelled.nativeTaskId!)?.status).toBe('failed')
+    expect(f.db.db.prepare('SELECT COUNT(*) AS n FROM codex_runtime_executions').get()?.n).toBe(0)
+    expect(methods).not.toContain('turn/start')
+  })
+
   it('keeps both native execution results when core review rejects then retries a logical item', async () => {
     const { f, core, supervisor, session, item } = fixture()
     await core.start(item.workItemId, item.revision)

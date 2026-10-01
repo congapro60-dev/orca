@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- Why: preload is the audited renderer/Electron IPC contract; co-locating the surface eases security and type-drift review. */
 import { contextBridge, ipcRenderer, webFrame, webUtils } from 'electron'
+import type { DailyDriverRequest, DailyDriverResponse } from '../shared/daily-driver-contract'
 import { electronAPI } from '@electron-toolkit/preload'
 import { preloadE2EConfig } from './e2e-config'
 import { glApi } from './gitlab'
@@ -558,6 +559,10 @@ ipcRenderer.on('ui:findInBrowserPage', (_event, source: unknown) => {
 
 // Custom APIs for renderer
 const api = {
+  dailyDriver: {
+    call: (request: DailyDriverRequest): Promise<DailyDriverResponse> =>
+      ipcRenderer.invoke('dailyDriver:call', request)
+  } satisfies PreloadApi['dailyDriver'],
   app: {
     getIdentity: (): Promise<AppIdentity> => ipcRenderer.invoke('app:getIdentity'),
     getFeatureWallAssetBaseUrl: (): Promise<string> =>

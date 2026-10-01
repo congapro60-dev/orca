@@ -121,11 +121,12 @@ function fixture(scenario: Scenario = {}) {
 
 describe('CodexRuntimeAdapterV0', () => {
   it('captures identity and an early structured result without claiming an actual model', async () => {
-    const { adapter, calls } = fixture()
+    const { adapter, calls, getInvocation } = fixture()
     const receipt = await adapter.start(request)
     const result = await adapter.result(receipt.executionId)
     expect(result.status).toBe('COMPLETED')
     expect(result.text).toBe('READY')
+    expect(getInvocation().args).toContain('--config=model_provider="openai"')
     expect(result.receipt).toMatchObject({
       threadId: 'thread-1',
       turnId: 'turn-1',

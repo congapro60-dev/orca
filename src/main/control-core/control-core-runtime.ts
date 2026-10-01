@@ -10,7 +10,11 @@ import type { ControlWorkStore } from './control-work-store'
 import { compileWorkPacket } from './work-packet-compiler'
 
 export type CoreRuntimePort = {
-  start: (taskId: string, request: CodexRuntimeRequest) => Promise<CodexExecutionRecord>
+  start: (
+    taskId: string,
+    request: CodexRuntimeRequest,
+    signal?: AbortSignal
+  ) => Promise<CodexExecutionRecord>
   get: (executionId: string) => CodexExecutionRecord
   result: (executionId: string) => Promise<CodexExecutionRecord>
   cancel: (executionId: string) => Promise<void>
@@ -23,11 +27,12 @@ export type CoreRuntimeEnvironment = {
 
 export class ControlCoreRuntime {
   private readonly starting = new Set<string>()
+  private readonly preparing = new Map<string, AbortController>()
 
   constructor(
     private readonly store: ControlWorkStore,
     private readonly runtime: CoreRuntimePort,
-    private readonly environment: CoreRuntimeEnvironment
+    private readonly environment: CoreRuntimeEnvironment | (() => CoreRuntimeEnvironment)
   ) {}
 
   async start(
@@ -85,15 +90,23 @@ export class ControlCoreRuntime {
       return { item: assigned, session, packet }
     })
     this.starting.add(id)
+    const controller = new AbortController()
+    this.preparing.set(id, controller)
     try {
-      const execution = await this.runtime.start(accepted.item.nativeTaskId!, {
-        ...this.environment,
-        worktree: accepted.session.worktree,
-        prompt: accepted.packet.prompt,
-        permissionMode: profile.permissionMode,
-        approvalPolicy: 'never',
-        ...(profile.requestedModel ? { requestedModel: profile.requestedModel } : {})
-      })
+      const environment =
+        typeof this.environment === 'function' ? this.environment() : this.environment
+      const execution = await this.runtime.start(
+        accepted.item.nativeTaskId!,
+        {
+          ...environment,
+          worktree: accepted.session.worktree,
+          prompt: accepted.packet.prompt,
+          permissionMode: profile.permissionMode,
+          approvalPolicy: 'never',
+          ...(profile.requestedModel ? { requestedModel: profile.requestedModel } : {})
+        },
+        controller.signal
+      )
       const attached = this.apply(id, execution)
       if (attached.cancelRequested && ['WAITING', 'RUNNING'].includes(attached.status)) {
         await this.runtime.cancel(execution.executionId)
@@ -111,20 +124,47 @@ export class ControlCoreRuntime {
         }
         const task = this.store.native.getTask(current.nativeTaskId!)
         const provenUnstarted = task?.status === 'ready'
+        if (provenUnstarted) {
+          this.store.native.db
+            .prepare(
+              "UPDATE tasks SET status='failed',result=?,completed_at=? WHERE id=? AND status='ready'"
+            )
+            .run(
+              current.cancelRequested
+                ? 'Cancelled before dispatch'
+                : 'Runtime preparation failed before dispatch',
+              new Date().toISOString(),
+              current.nativeTaskId
+            )
+        }
         const failed = this.store.save({
           ...current,
-          status: provenUnstarted ? 'FAILED' : 'BLOCKED'
+          status:
+            current.cancelRequested && provenUnstarted
+              ? 'CANCELLED'
+              : provenUnstarted
+                ? 'FAILED'
+                : 'BLOCKED'
         })
-        this.store.event(failed, provenUnstarted ? 'WORK_FAILED' : 'WORK_BLOCKED', {
-          reason: redactString(error instanceof Error ? error.message : String(error)).slice(
-            0,
-            2000
-          )
-        })
+        this.store.event(
+          failed,
+          failed.status === 'CANCELLED'
+            ? 'WORK_CANCELLED'
+            : provenUnstarted
+              ? 'WORK_FAILED'
+              : 'WORK_BLOCKED',
+          {
+            reason: redactString(error instanceof Error ? error.message : String(error)).slice(
+              0,
+              2000
+            )
+          }
+        )
       })
       return this.store.item(id)
     } finally {
       this.starting.delete(id)
+      this.preparing.delete(id)
     }
   }
 
@@ -194,6 +234,7 @@ export class ControlCoreRuntime {
       await this.runtime.cancel(item.executionId)
       return this.refresh(id)
     }
+    this.preparing.get(id)?.abort()
     return item
   }
 

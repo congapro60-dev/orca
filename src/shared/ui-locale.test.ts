@@ -7,10 +7,17 @@ import {
   UI_LANGUAGE_JAPANESE,
   UI_LANGUAGE_KOREAN,
   UI_LANGUAGE_SPANISH,
-  UI_LANGUAGE_SYSTEM
+  UI_LANGUAGE_SYSTEM,
+  UI_LANGUAGE_VIETNAMESE
 } from './ui-language'
 
 describe('ui-locale', () => {
+  it('resolves persisted Vietnamese and the vi-VN system locale', () => {
+    expect(normalizeSupportedUiLocale('vi-VN')).toBe('vi')
+    expect(resolveUiLocale(UI_LANGUAGE_VIETNAMESE, 'en-US')).toBe('vi')
+    expect(resolveUiLocale(UI_LANGUAGE_SYSTEM, 'vi-VN')).toBe('vi')
+  })
+
   it('normalizes supported locale prefixes', () => {
     expect(normalizeSupportedUiLocale('en-US')).toBe('en')
     expect(normalizeSupportedUiLocale('zh-CN')).toBe('zh')

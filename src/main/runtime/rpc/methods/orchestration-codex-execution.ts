@@ -23,7 +23,7 @@ const Events = Show.extend({ after: z.number().int().min(0).optional() }).strict
 const Cancel = Show.extend({ run: z.string().min(1), from: z.string().min(1) }).strict()
 
 const supervisors = new WeakMap<OrcaRuntimeService, CodexExecutionSupervisor>()
-function supervisor(runtime: OrcaRuntimeService): CodexExecutionSupervisor {
+export function getCodexExecutionSupervisor(runtime: OrcaRuntimeService): CodexExecutionSupervisor {
   let current = supervisors.get(runtime)
   if (!current) {
     current = new CodexExecutionSupervisor(runtime.getOrchestrationDb(), runtime.getRuntimeId())
@@ -63,7 +63,7 @@ export const ORCHESTRATION_CODEX_EXECUTION_METHODS: RpcMethod[] = [
           'Programmatic Codex V0 requires a local workspace.'
         )
       }
-      const row = await supervisor(runtime).start(
+      const row = await getCodexExecutionSupervisor(runtime).start(
         task.id,
         {
           worktree: workspace.path,
@@ -83,13 +83,15 @@ export const ORCHESTRATION_CODEX_EXECUTION_METHODS: RpcMethod[] = [
   defineMethod({
     name: 'orchestration.codexShowV1',
     params: Show,
-    handler: ({ executionId }, { runtime }) => ({ execution: supervisor(runtime).get(executionId) })
+    handler: ({ executionId }, { runtime }) => ({
+      execution: getCodexExecutionSupervisor(runtime).get(executionId)
+    })
   }),
   defineMethod({
     name: 'orchestration.codexEventsV1',
     params: Events,
     handler: ({ executionId, after }, { runtime }) => ({
-      events: supervisor(runtime).store.events(executionId, after)
+      events: getCodexExecutionSupervisor(runtime).store.events(executionId, after)
     })
   }),
   defineMethod({
@@ -105,7 +107,7 @@ export const ORCHESTRATION_CODEX_EXECUTION_METHODS: RpcMethod[] = [
         requireCurrentConsumer: true,
         callerEvidence: orchestrationCompatibilityEvidence
       })
-      const owner = supervisor(runtime)
+      const owner = getCodexExecutionSupervisor(runtime)
       if (owner.get(executionId).runId !== scope.id) {
         throw new OrchestrationError('consumer_fenced', 'Execution belongs to another Run.')
       }
