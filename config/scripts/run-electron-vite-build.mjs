@@ -1,4 +1,5 @@
-import { spawn } from 'node:child_process'
+import { spawn, execFileSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { appendBuildOldSpaceOption } from './node-old-space-limit.mjs'
@@ -6,6 +7,16 @@ import { appendBuildOldSpaceOption } from './node-old-space-limit.mjs'
 const require = createRequire(import.meta.url)
 const electronVitePackageJson = require.resolve('electron-vite/package.json')
 const electronViteCli = path.join(path.dirname(electronVitePackageJson), 'bin', 'electron-vite.js')
+if (process.platform === 'win32') {
+  execFileSync(
+    process.execPath,
+    [fileURLToPath(new URL('./build-owned-process-tree.mjs', import.meta.url))],
+    {
+      stdio: 'inherit',
+      windowsHide: true
+    }
+  )
+}
 
 // Release builds have started OOMing on GitHub's macOS runners during the
 // renderer bundle. Reserve memory on smaller hosts so the OS does not kill Vite.

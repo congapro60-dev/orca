@@ -33,6 +33,11 @@ export type DailyDriverSessionView = {
     approval: string
     resultStored: boolean
   } | null
+  recovery?: {
+    status: 'RUNNING' | 'INTERRUPTED' | 'NEEDS_RECONCILE' | 'STALE_CHECKPOINT' | 'ELIGIBLE'
+    processVerdict: 'live' | 'unverifiable' | 'exited'
+    reason: string
+  } | null
 }
 
 export type DailyDriverRequest =
@@ -43,6 +48,7 @@ export type DailyDriverRequest =
   | { method: 'open'; sessionId: string }
   | { method: 'start'; sessionId: string; expectedRevision: number }
   | { method: 'cancel'; sessionId: string }
+  | { method: 'reconcile'; sessionId: string }
   | { method: 'verify'; sessionId: string; expectedRevision: number; reviewedResultHash: string }
 
 export type DailyDriverResponse =

@@ -63,6 +63,60 @@ function fixture(file = ':memory:') {
 }
 
 describe('Native Orca Codex execution linkage', () => {
+  it('persists bounded redacted commands across reopen and rejects terminal replacement', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'orca-command-db-'))
+    dirs.push(dir)
+    const file = join(dir, 'orchestration.db')
+    const { db, store, row, snapshot, running } = fixture(file)
+    expect(store.require(row.executionId).commands).toBeNull()
+    running()
+    const completed: CodexRuntimeResult = {
+      ...snapshot,
+      status: 'COMPLETED',
+      text: 'Result',
+      commands: [
+        { itemId: 'cmd-a', command: 'test token=fixture-secret', exitCode: 2, status: 'completed' }
+      ]
+    }
+    store.save(completed)
+    const commands = store.require(row.executionId).commands!
+    expect(commands[0].exitCode).toBe(2)
+    expect(commands[0].command).not.toContain('fixture-secret')
+    expect(() => store.save(completed)).not.toThrow()
+    expect(() => store.save({ ...completed, commands: [] })).toThrow(/terminal Codex command/)
+    databases.splice(databases.indexOf(db), 1)
+    db.close()
+    const fresh = new OrchestrationDb(file)
+    databases.push(fresh)
+    expect(new CodexExecutionStore(fresh, 'next-epoch').require(row.executionId).commands).toEqual(
+      commands
+    )
+  })
+
+  it('rejects tampered persisted process observations and un-hashed legacy rows', async () => {
+    const { db, store, row, snapshot, running } = fixture()
+    running()
+    store.save({
+      ...snapshot,
+      status: 'COMPLETED',
+      text: 'Result',
+      processObservations: [
+        {
+          incarnationId: 'p',
+          pid: 7,
+          scope: 'app-server-child',
+          verdict: 'exited',
+          observedAt: new Date().toISOString(),
+          exitCode: 0,
+          signal: null
+        }
+      ]
+    })
+    db.db
+      .prepare('UPDATE codex_runtime_process_observations SET snapshot=? WHERE execution_id=?')
+      .run('[]', row.executionId)
+    expect(() => store.require(row.executionId)).toThrow(/process observation integrity/)
+  })
   it('keeps an execution result snapshot independent of later Task edits', () => {
     const { db, store, row, snapshot, running } = fixture()
     running()

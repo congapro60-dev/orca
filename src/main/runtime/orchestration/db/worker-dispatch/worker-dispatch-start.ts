@@ -6,6 +6,7 @@ import { generateId } from '../generated-id'
 import type { OrchestrationDb } from '../orchestration-db'
 import { insertStartingDispatchContextRow } from '../dispatch-row-writer'
 import type { DispatchCreator } from '../dispatch-depth'
+import { assertCodexRecoveryRelease } from '../../codex-recovery-release'
 
 export function createStartingWorkerDispatch(
   this: OrchestrationDb,
@@ -120,6 +121,7 @@ export function createStartingWorkerDispatch(
       if (!params.runtimeEpoch || params.federation) {
         throw new Error('Programmatic Codex requires a local runtime epoch')
       }
+      assertCodexRecoveryRelease(this, params.codexExecution.worktree)
       this.db
         .prepare(`INSERT INTO codex_runtime_executions
         (execution_id, dispatch_id, worktree, runtime_epoch) VALUES (?, ?, ?, ?)`)

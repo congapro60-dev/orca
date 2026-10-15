@@ -21,7 +21,7 @@ export function DailyDriverSessionPanel({
   item: WorkItem
   busy: boolean
   refresh: () => void
-  act: (method: 'cancel' | 'verify' | 'start') => void
+  act: (method: 'cancel' | 'verify' | 'start' | 'reconcile') => void
   signIn: () => void
 }): React.JSX.Element {
   const [accepted, setAccepted] = useState(false)
@@ -48,10 +48,28 @@ export function DailyDriverSessionPanel({
             {label('readyReview', 'Codex returned a result. Review evidence before verifying.')}
           </p>
         )}
-        {item.status === 'BLOCKED' && (
+        {item.status === 'BLOCKED' && view.recovery?.status !== 'ELIGIBLE' && (
           <p className="text-sm text-destructive">
             {label('blocked', 'Outcome uncertain. Reconcile before retry.')}
           </p>
+        )}
+        {view.recovery && (
+          <div
+            role="status"
+            className="space-y-2 rounded-md border border-border bg-muted p-3 text-sm"
+          >
+            <p>
+              {label('recovery', 'Recovery')}:{' '}
+              {label(`recoveryState.${view.recovery.status}`, view.recovery.status)}
+            </p>
+            <p className="text-muted-foreground">{view.recovery.reason}</p>
+            <p>
+              {label(
+                'recoveryGuidance',
+                'This check does not start work. Do not retry while the previous execution is unverified.'
+              )}
+            </p>
+          </div>
         )}
         {item.status === 'FAILED' && (
           <p className="text-sm text-destructive">
@@ -74,11 +92,18 @@ export function DailyDriverSessionPanel({
               {label('cancel', 'Cancel task')}
             </Button>
           )}
-          {['FAILED', 'CANCELLED'].includes(item.status) && (
-            <Button variant="secondary" size="sm" disabled={busy} onClick={() => act('start')}>
-              {label('retry', 'Retry task')}
+          {['BLOCKED', 'FAILED', 'CANCELLED'].includes(item.status) && (
+            <Button variant="outline" size="sm" disabled={busy} onClick={() => act('reconcile')}>
+              {label('reconcile', 'Check recovery state')}
             </Button>
           )}
+          {['FAILED', 'CANCELLED', 'BLOCKED'].includes(item.status) &&
+            (view.recovery?.status === 'ELIGIBLE' ||
+              (!view.recovery && item.status !== 'BLOCKED')) && (
+              <Button variant="secondary" size="sm" disabled={busy} onClick={() => act('start')}>
+                {label('retry', 'Retry task')}
+              </Button>
+            )}
         </div>
         <div>
           <h2 className="text-sm font-medium">{label('result', 'Result')}</h2>

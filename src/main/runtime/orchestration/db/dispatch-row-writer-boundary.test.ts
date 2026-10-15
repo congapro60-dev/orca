@@ -1,4 +1,5 @@
-import { readFileSync, readdirSync, statSync, type Dirent } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
@@ -29,9 +30,6 @@ const insertPattern = (table: string): RegExp =>
  */
 const EXEMPT_PATH_FRAGMENTS = ['/db/schema/', '/db/reset/', '/orchestration-schema-version-skew']
 
-const SCANNED_EXTENSIONS = ['.ts', '.tsx']
-const IGNORED_DIRECTORIES = new Set(['node_modules', 'dist', 'out', 'build', '.git'])
-
 function isTestFile(path: string): boolean {
   return (
     /\.(?:test|spec)\.tsx?$/.test(path) ||
@@ -42,27 +40,32 @@ function isTestFile(path: string): boolean {
 }
 
 function collectSourceFiles(root: string): string[] {
-  const found: string[] = []
-  let entries: Dirent[]
+  const repoRoot = resolve(root, '..')
+  // Prefilter tracked files by literals required by insertPattern; include all current WIP files.
+  const candidates = new Set<string>()
   try {
-    entries = readdirSync(root, { withFileTypes: true })
-  } catch {
-    return found
-  }
-  for (const entry of entries) {
-    if (IGNORED_DIRECTORIES.has(entry.name)) {
-      continue
-    }
-    const full = join(root, entry.name)
-    // Reuse directory metadata on Windows; retain the prior symlink-following behavior.
-    const directory = entry.isSymbolicLink() ? statSync(full).isDirectory() : entry.isDirectory()
-    if (directory) {
-      found.push(...collectSourceFiles(full))
-    } else if (SCANNED_EXTENSIONS.some((ext) => entry.name.endsWith(ext))) {
-      found.push(full)
+    execFileSync(
+      'git',
+      ['-C', repoRoot, 'grep', '-l', '-I', '-E', 'dispatch_contexts|remote_dispatch_attachments|INSERT', '--', 'src'],
+      { encoding: 'utf8' }
+    )
+      .split(/\r?\n/)
+      .filter((file) => /\.tsx?$/.test(file))
+      .forEach((file) => candidates.add(join(repoRoot, file)))
+  } catch (error) {
+    if ((error as { status?: number }).status !== 1) {
+      throw error
     }
   }
-  return found
+  execFileSync(
+    'git',
+    ['-C', repoRoot, 'ls-files', '--others', '--exclude-standard', '--', 'src'],
+    { encoding: 'utf8' }
+  )
+    .split(/\r?\n/)
+    .filter((file) => /\.tsx?$/.test(file))
+    .forEach((file) => candidates.add(join(repoRoot, file)))
+  return [...candidates]
 }
 
 describe('live-worker row insert boundary', () => {

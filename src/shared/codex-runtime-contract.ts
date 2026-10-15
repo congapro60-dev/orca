@@ -1,3 +1,6 @@
+import type { CommandEvidence } from './control-evidence-contract'
+import type { CodexProcessObservation } from './codex-process-contract'
+
 export type CodexExecutionStatus =
   | 'STARTING'
   | 'RUNNING'
@@ -47,4 +50,7 @@ export type CodexRuntimeResult = {
   receipt: CodexRuntimeReceipt
   text: string
   error: string | null
+  /** Undefined/null means not captured; [] means an acknowledged turn had no captured commands. */
+  commands?: CommandEvidence[] | null
+  processObservations?: CodexProcessObservation[]
 }

@@ -1,6 +1,5 @@
 import { realpathSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { z } from 'zod'
 import type {
   DailyDriverProject,
   DailyDriverRequest,
@@ -14,38 +13,10 @@ import { gitExecFileAsync } from '../git/command-runner/git-exec-file'
 import type { OrcaRuntimeService } from '../runtime/orca-runtime'
 import { getCodexExecutionSupervisor } from '../runtime/rpc/methods/orchestration-codex-execution'
 import { ControlCoreFacade } from './control-core-facade'
-
-const Id = z.string().trim().min(1).max(4096)
-const Request = z.discriminatedUnion('method', [
-  z.object({ method: z.literal('projects') }).strict(),
-  z.object({ method: z.literal('sessions'), projectId: Id }).strict(),
-  z.object({ method: z.literal('workspaceInfo'), projectId: Id, workspaceId: Id }).strict(),
-  z
-    .object({
-      method: z.literal('create'),
-      projectId: Id,
-      workspaceId: Id,
-      objective: z.string().trim().min(1).max(8000)
-    })
-    .strict(),
-  z.object({ method: z.literal('open'), sessionId: z.string().uuid() }).strict(),
-  z
-    .object({
-      method: z.literal('start'),
-      sessionId: z.string().uuid(),
-      expectedRevision: z.number().int().nonnegative()
-    })
-    .strict(),
-  z.object({ method: z.literal('cancel'), sessionId: z.string().uuid() }).strict(),
-  z
-    .object({
-      method: z.literal('verify'),
-      sessionId: z.string().uuid(),
-      expectedRevision: z.number().int().nonnegative(),
-      reviewedResultHash: z.string().regex(/^[a-f0-9]{64}$/)
-    })
-    .strict()
-])
+import { checkpointRuntime } from './checkpoint-runtime'
+import { reconcileDailyDriver } from './daily-driver-reconcile'
+import { DailyDriverRequestSchema } from './daily-driver-request'
+import { hasReadOnlyCheckpointEvidence } from './verification-evidence'
 
 /** Local desktop workflow boundary. The owning host resolves identity and runtime paths. */
 export class DailyDriverHost {
@@ -62,13 +33,19 @@ export class DailyDriverHost {
       const native = this.runtime.getOrchestrationDb()
       this.facade = new ControlCoreFacade(
         native,
-        {
-          start: (taskId, request, signal) =>
-            getCodexExecutionSupervisor(this.runtime).start(taskId, request, undefined, signal),
+        checkpointRuntime(native, {
+          start: (taskId, request, signal, _checkpoint, beforeDispatch) =>
+            getCodexExecutionSupervisor(this.runtime).start(
+              taskId,
+              request,
+              undefined,
+              signal,
+              beforeDispatch
+            ),
           get: (id) => getCodexExecutionSupervisor(this.runtime).get(id),
           result: (id) => getCodexExecutionSupervisor(this.runtime).result(id),
           cancel: (id) => getCodexExecutionSupervisor(this.runtime).cancel(id)
-        },
+        }),
         () => ({
           executablePath: resolveCodexRuntimeExecutable(),
           codexHome: this.resolveCodexHome()
@@ -90,6 +67,7 @@ export class DailyDriverHost {
               execution.worktree === session.worktree &&
               receipt?.effectiveSandbox === 'READ_ONLY' &&
               receipt.approvalPolicy === 'never' &&
+              hasReadOnlyCheckpointEvidence(native, item) &&
               task?.status === 'completed' &&
               task.result === execution.result &&
               dispatch?.state === 'succeeded' &&
@@ -226,12 +204,22 @@ export class DailyDriverHost {
               approval: execution.receipt?.approvalPolicy ?? 'UNKNOWN_UNVERIFIED',
               resultStored: task.result === execution.result && execution.result !== null
             }
+          : null,
+      recovery: (() => {
+        const decision = this.core().latestDecision(item.workItemId)
+        return decision && decision.sourceExecutionId === item.executionId
+          ? {
+              status: decision.status,
+              processVerdict: decision.processVerdict,
+              reason: decision.reason
+            }
           : null
+      })()
     }
   }
 
   async call(raw: DailyDriverRequest): Promise<DailyDriverResponse> {
-    const request = Request.parse(raw)
+    const request = DailyDriverRequestSchema.parse(raw)
     if (request.method === 'projects') {
       return this.projects()
     }
@@ -265,7 +253,7 @@ export class DailyDriverHost {
     if (!item) {
       throw new Error('Logical session has no main WorkItem')
     }
-    if (request.method === 'start') {
+    if (request.method === 'start' || request.method === 'reconcile') {
       const session = this.core().openSession(request.sessionId).session
       const projects = await this.projects()
       const current = projects
@@ -274,6 +262,8 @@ export class DailyDriverHost {
       if (!current) {
         throw new Error('Registered local workspace changed; select a current workspace')
       }
+    }
+    if (request.method === 'start') {
       const pending = this.core().start(item.workItemId, request.expectedRevision)
       // Acceptance is durable before the runtime preflight returns; UI can now poll and cancel it.
       void pending.catch(() => {})
@@ -283,6 +273,14 @@ export class DailyDriverHost {
     }
     if (request.method === 'cancel') {
       await this.core().cancel(item.workItemId)
+    }
+    if (request.method === 'reconcile') {
+      await reconcileDailyDriver(
+        this.core(),
+        this.runtime.getOrchestrationDb(),
+        item.workItemId,
+        request.sessionId
+      )
     }
     if (request.method === 'verify') {
       const latest = this.view(request.sessionId)

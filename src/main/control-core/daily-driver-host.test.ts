@@ -19,6 +19,8 @@ vi.mock('../runtime/rpc/methods/orchestration-codex-execution', () => ({
   getCodexExecutionSupervisor: () => deps.supervisor
 }))
 import { DailyDriverHost } from './daily-driver-host'
+import { ControlWorkStore } from './control-work-store'
+import { ControlEvidenceStore } from './control-evidence-store'
 
 const fixtures: { db: OrchestrationDb; dir: string }[] = []
 afterEach(() => {
@@ -91,6 +93,56 @@ function fixture() {
 }
 
 describe('Daily Driver uses registered local workspace authority', () => {
+  it('does not display a recovery decision belonging to a previous execution', async () => {
+    const { host, db } = fixture()
+    const created = (await host.call({
+      method: 'create',
+      projectId: 'project-one',
+      workspaceId: 'workspace-local',
+      objective: 'Inspect'
+    })) as DailyDriverSessionView
+    const item = created.items.find((row) => row.branchId === 'main')!
+    new ControlEvidenceStore(new ControlWorkStore(db)).decision({
+      workItemId: item.workItemId,
+      sourceExecutionId: 'old-execution',
+      status: 'ELIGIBLE',
+      processVerdict: 'exited',
+      baselineCheckpointId: null,
+      observedCheckpointId: null,
+      reason: 'Previous attempt only'
+    })
+    const view = (await host.call({
+      method: 'open',
+      sessionId: created.session.logicalWorkSessionId
+    })) as DailyDriverSessionView
+    expect(view.recovery).toBeNull()
+  })
+
+  it('reconciles locally without starting work; rejects caller authority and withdrawn registration', async () => {
+    const f = fixture()
+    const created = (await f.host.call({
+      method: 'create',
+      projectId: 'project-one',
+      workspaceId: 'workspace-local',
+      objective: 'Inspect'
+    })) as DailyDriverSessionView
+    const request = {
+      method: 'reconcile' as const,
+      sessionId: created.session.logicalWorkSessionId
+    }
+    const view = (await f.host.call(request)) as DailyDriverSessionView
+    expect(view.recovery?.status).toBe('NEEDS_RECONCILE')
+    expect(view.recovery?.processVerdict).toBe('unverifiable')
+    const reopened = (await new DailyDriverHost(f.runtime as never).call({
+      method: 'open',
+      sessionId: created.session.logicalWorkSessionId
+    })) as DailyDriverSessionView
+    expect(reopened.recovery).toEqual(view.recovery)
+    expect(deps.supervisor.start).not.toHaveBeenCalled()
+    await expect(f.host.call({ ...request, processVerdict: 'exited' } as never)).rejects.toThrow()
+    f.unregisterLocal()
+    await expect(f.host.call(request)).rejects.toThrow(/Registered local workspace/)
+  })
   it('uses the host-selected owned account home only when starting', async () => {
     const { runtime } = fixture()
     const resolveHome = vi.fn(() => 'owned-managed-account-home')
@@ -111,6 +163,7 @@ describe('Daily Driver uses registered local workspace authority', () => {
       sessionId: created.session.logicalWorkSessionId,
       expectedRevision: created.items.find((item) => item.branchId === 'main')!.revision
     })
+    await vi.waitFor(() => expect(deps.supervisor.start).toHaveBeenCalledTimes(1))
     expect(deps.supervisor.start).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
@@ -118,7 +171,8 @@ describe('Daily Driver uses registered local workspace authority', () => {
         permissionMode: 'READ_ONLY'
       }),
       undefined,
-      expect.any(AbortSignal)
+      expect.any(AbortSignal),
+      expect.any(Function)
     )
   })
 

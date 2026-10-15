@@ -20,3 +20,4 @@ declare const ORCA_POSTHOG_WRITE_KEY: string | null
 // point a packaged build at a staging server without re-running the
 // release pipeline.
 declare const ORCA_DIAGNOSTICS_TOKEN_URL: string | null
+declare const ORCA_OWNED_LAUNCHER_SHA256: string | null

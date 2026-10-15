@@ -1,9 +1,29 @@
 import {
   spawnProcess,
   type ChildProcessHandle,
+  type PipedProcessHandle,
   type ProcessSpawnImplementation,
   type ProcessSpawnOptions
 } from '../../shared/child-process/run-process'
+import { waitForProcessExitUntil } from './codex-process-exit-deadline'
+
+export async function reapCodexAppServerProcess(
+  child: PipedProcessHandle,
+  exitPromise: Promise<void>,
+  exited: () => boolean,
+  graceMs = 1500
+): Promise<void> {
+  try {
+    child.stdin.end()
+  } catch {}
+  if (!exited() && child.pid) {
+    await waitForProcessExitUntil(exitPromise, graceMs)
+    if (!exited()) {
+      killCodexAppServerProcessTree(child)
+      await waitForProcessExitUntil(exitPromise, 1000)
+    }
+  }
+}
 
 export const spawnThroughProcessBoundary = ((
   program: string,

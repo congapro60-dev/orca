@@ -1,4 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest'
+import { randomUUID } from 'node:crypto'
+import { mkdirSync } from 'node:fs'
+import { join } from 'node:path'
+import type { CodexRuntimeReceipt } from '../../shared/codex-runtime-contract'
+import { CodexExecutionStore } from '../runtime/orchestration/codex-execution-store'
+import { ControlCoreFacade } from './control-core-facade'
+import { checkpointRuntime } from './checkpoint-runtime'
 import type { NewCandidateMemory } from './control-memory-store'
 import { coreFixture } from './control-core-test-fixture'
 
@@ -43,12 +50,89 @@ async function candidate(f: ReturnType<typeof coreFixture>, statement = 'Use bou
 describe('TaskJournal references canonical history without transcript copying', () => {
   it('captures paginated events and failed-attempt references, without rewriting old evidence', async () => {
     const f = setup()
-    const { session, item } = f.create()
-    for (let index = 0; index < 501; index++) {
-      f.core.recordDecision(session.logicalWorkSessionId, `Decision ${index}`)
+    const workspace = join(f.directory, 'workspace')
+    mkdirSync(workspace)
+    const native = new CodexExecutionStore(f.db, 'memory-journal-retry-fixture')
+    f.runtime.start.mockImplementation(
+      async (taskId, request, signal, _checkpoint, beforeDispatch) => {
+        signal?.throwIfAborted()
+        await beforeDispatch?.()
+        return native.accept(taskId, randomUUID(), request.worktree)
+      }
+    )
+    f.runtime.get.mockImplementation((id) => native.require(id))
+    f.runtime.result.mockImplementation(async (id) => {
+      if (native.require(id).status === 'STARTING') {
+        const receipt: CodexRuntimeReceipt = {
+          executionId: id,
+          requestedRuntime: 'codex',
+          resolvedExecutablePath: f.environment.executablePath,
+          resolvedExecutableVersion: 'fixture',
+          runtimeProtocol: 'codex-app-server-jsonrpc-v2',
+          requestedModel: null,
+          resolvedModel: null,
+          actualModel: 'UNKNOWN_UNVERIFIED',
+          effectiveSandbox: 'READ_ONLY',
+          approvalPolicy: 'never',
+          worktree: workspace,
+          codexHome: f.environment.codexHome,
+          threadId: randomUUID(),
+          turnId: randomUUID()
+        }
+        native.save({ receipt, status: 'RUNNING', text: '', error: null })
+        native.save({
+          receipt,
+          status: 'COMPLETED',
+          text: 'DONE: fixture result, not verification authority',
+          error: null,
+          processObservations: [
+            {
+              incarnationId: randomUUID(),
+              pid: 77,
+              scope: 'owned-process-launcher',
+              verdict: 'exited',
+              treeVerdict: 'exited',
+              observedAt: new Date().toISOString(),
+              exitCode: 0,
+              signal: null,
+              ownedTree: {
+                protocol: 'orca-owned-process-v1',
+                launcherSha256: 'a'.repeat(64),
+                rootPid: 78,
+                activeProcesses: 0,
+                totalProcesses: 1,
+                childExitCode: 0
+              }
+            }
+          ]
+        })
+      }
+      return native.require(id)
+    })
+    const core = new ControlCoreFacade(
+      f.db,
+      checkpointRuntime(f.db, f.runtime),
+      f.environment,
+      f.verifier
+    )
+    const session = core.createSession({
+      projectId: 'project-test',
+      worktree: workspace,
+      objective: 'Inspect the selected workspace'
+    })
+    const item = core
+      .openSession(session.logicalWorkSessionId)
+      .items.find((row) => row.branchId === 'main')!
+    const complete = async () => {
+      await core.start(item.workItemId, core.item(item.workItemId).revision)
+      return core.wait(item.workItemId)
     }
-    const first = await f.complete(item.workItemId)
-    const firstArtifact = f.core.publishArtifact(
+    for (let index = 0; index < 501; index++) {
+      core.recordDecision(session.logicalWorkSessionId, `Decision ${index}`)
+    }
+    const first = await complete()
+    const firstEvidence = native.require(first.executionId!)
+    const firstArtifact = core.publishArtifact(
       item.workItemId,
       first.revision,
       'artifact:old-attempt'
@@ -58,10 +142,12 @@ describe('TaskJournal references canonical history without transcript copying', 
       evidenceRefs: ['review:first-attempt'],
       reason: 'Retry required'
     })
-    await f.core.verify(item.workItemId, firstArtifact.revision)
-    const second = await f.complete(item.workItemId)
-    await f.core.verify(item.workItemId, second.revision)
-    const journal = f.core.journal(session.logicalWorkSessionId)!
+    await core.verify(item.workItemId, firstArtifact.revision)
+    const second = await complete()
+    expect(core.latestDecision(item.workItemId)?.status).toBe('ELIGIBLE')
+    expect(native.require(first.executionId!)).toEqual(firstEvidence)
+    await core.verify(item.workItemId, second.revision)
+    const journal = core.journal(session.logicalWorkSessionId)!
     expect(journal.decisionEventSequences).toHaveLength(501)
     expect(journal.executionIds).toEqual([first.executionId, second.executionId])
     expect(journal.artifactRefs).toContain('artifact:old-attempt')

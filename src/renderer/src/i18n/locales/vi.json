@@ -1,6 +1,10 @@
 {
   "menu": { "file": "Tệp", "edit": "Chỉnh sửa", "view": "Xem", "help": "Trợ giúp" },
-  "settings": { "appearance": { "language": { "vietnamese": "Tiếng Việt", "english": "Tiếng Anh", "system": "Theo hệ thống" } } },
+  "settings": {
+    "appearance": {
+      "language": { "vietnamese": "Tiếng Việt", "english": "Tiếng Anh", "system": "Theo hệ thống" }
+    }
+  },
   "auto": { "components": { "sidebar": { "SidebarNav": { "dailyDriver": "Công việc ORCA" } } } },
   "dailyDriver": {
     "title": "Công việc ORCA",
@@ -37,6 +41,16 @@
     "readyReview": "Codex đã trả kết quả. Xem bằng chứng rồi xác minh.",
     "verified": "Kết quả đã được xác minh bằng dữ liệu runtime và bản ghi ORCA.",
     "blocked": "Không xác định được kết quả. Cần đối chiếu trước khi chạy lại.",
+    "recovery": "Khôi phục công việc",
+    "reconcile": "Kiểm tra trạng thái khôi phục",
+    "recoveryGuidance": "Kiểm tra này không chạy công việc. Không chạy lại khi chưa xác minh được lần thực thi trước đã dừng.",
+    "recoveryState": {
+      "RUNNING": "Lần thực thi trước vẫn đang chạy",
+      "INTERRUPTED": "Công việc bị gián đoạn",
+      "NEEDS_RECONCILE": "Chưa đủ bằng chứng để chạy lại",
+      "STALE_CHECKPOINT": "Thư mục đã thay đổi so với checkpoint",
+      "ELIGIBLE": "Đủ điều kiện xét tiếp tục"
+    },
     "error": "Không thể hoàn tất thao tác. Xem thông báo kỹ thuật và thử lại.",
     "state": {
       "QUEUED": "Đang chờ",

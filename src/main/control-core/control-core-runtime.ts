@@ -8,12 +8,22 @@ import type { CodexExecutionRecord } from '../runtime/orchestration/codex-execut
 import { redactString } from '../observability/redactor'
 import type { ControlWorkStore } from './control-work-store'
 import { compileWorkPacket } from './work-packet-compiler'
+import {
+  assertStartSource,
+  prepareResume,
+  releaseBlockedExecution,
+  startSource
+} from './resume-preparation'
+import type { WorkspaceCheckpoint } from '../../shared/control-evidence-contract'
+import { prepareResumeHandoff, handoffCapsule, completeResumeHandoff } from './resume-handoff'
 
 export type CoreRuntimePort = {
   start: (
     taskId: string,
     request: CodexRuntimeRequest,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    admittedCheckpoint?: WorkspaceCheckpoint,
+    beforeDispatch?: () => Promise<void>
   ) => Promise<CodexExecutionRecord>
   get: (executionId: string) => CodexExecutionRecord
   result: (executionId: string) => Promise<CodexExecutionRecord>
@@ -41,32 +51,22 @@ export class ControlCoreRuntime {
     context: readonly WorkContextCapsule[],
     profile: CoreRuntimeProfile
   ): Promise<WorkItem> {
+    const source = startSource(this.store, id, expectedRevision)
+    const admittedCheckpoint = source.item.executionId
+      ? await prepareResume(this.store, source)
+      : undefined
     const accepted = this.store.transaction(() => {
-      const item = this.store.item(id)
-      const session = this.store.session(item.logicalWorkSessionId)
-      if (item.revision !== expectedRevision) {
-        throw new Error('Stale WorkItem revision')
-      }
-      if (
-        session.status !== 'ACTIVE' ||
-        item.parentWorkItemId === null ||
-        !['QUEUED', 'FAILED', 'CANCELLED'].includes(item.status)
-      ) {
-        throw new Error('WorkItem cannot start from current state')
-      }
-      if (item.dependsOn.some((dep) => this.store.item(dep).status !== 'VERIFIED')) {
-        throw new Error('WorkItem dependencies are not verified')
-      }
-      if (
-        this.store.native.db
-          .prepare(
-            "SELECT 1 FROM control_work_items WHERE status IN ('WAITING','RUNNING','BLOCKED') LIMIT 1"
-          )
-          .get()
-      ) {
-        throw new Error('Alpha runs only one WorkItem at a time')
-      }
-      const packet = compileWorkPacket(session, item, context, profile)
+      const { item, session } = assertStartSource(this.store, source)
+      releaseBlockedExecution(this.store, item.workItemId, admittedCheckpoint)
+      const handoff = admittedCheckpoint
+        ? prepareResumeHandoff(this.store, item, admittedCheckpoint)
+        : null
+      const packet = compileWorkPacket(
+        session,
+        item,
+        handoff ? [handoffCapsule(handoff), ...context] : context,
+        profile
+      )
       const task = this.store.native.createTask({ spec: packet.prompt, runId: session.runId })
       this.store.native.db
         .prepare('INSERT INTO control_work_attempts (task_id,item_id,created_at) VALUES (?,?,?)')
@@ -84,6 +84,7 @@ export class ControlCoreRuntime {
       this.store.event(assigned, 'WORK_ASSIGNED', {
         runtime: 'codex',
         nativeTaskId: task.id,
+        ...(handoff ? { handoffId: handoff.handoffId } : {}),
         selectedContextIds: packet.selectedContextIds,
         omittedContextIds: packet.omittedContextIds
       })
@@ -105,7 +106,8 @@ export class ControlCoreRuntime {
           approvalPolicy: 'never',
           ...(profile.requestedModel ? { requestedModel: profile.requestedModel } : {})
         },
-        controller.signal
+        controller.signal,
+        admittedCheckpoint
       )
       const attached = this.apply(id, execution)
       if (attached.cancelRequested && ['WAITING', 'RUNNING'].includes(attached.status)) {
@@ -139,6 +141,10 @@ export class ControlCoreRuntime {
         }
         const failed = this.store.save({
           ...current,
+          // A refused replacement must not erase the source's continuity requirement.
+          ...(provenUnstarted && source.item.executionId
+            ? { nativeTaskId: source.item.nativeTaskId, executionId: source.item.executionId }
+            : {}),
           status:
             current.cancelRequested && provenUnstarted
               ? 'CANCELLED'
@@ -284,6 +290,7 @@ export class ControlCoreRuntime {
       this.store.native.db
         .prepare('UPDATE control_work_attempts SET execution_id=? WHERE task_id=?')
         .run(execution.executionId, item.nativeTaskId)
+      completeResumeHandoff(this.store, updated)
       const types = {
         WAITING: 'WORK_PROGRESS',
         RUNNING: 'WORK_STARTED',

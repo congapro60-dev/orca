@@ -194,7 +194,7 @@ export default function DailyDriverPage(): React.JSX.Element {
     }
   }
 
-  const act = async (method: 'cancel' | 'verify' | 'start') => {
+  const act = async (method: 'cancel' | 'verify' | 'start' | 'reconcile') => {
     if (!selected || !item) {
       return
     }
@@ -212,20 +212,22 @@ export default function DailyDriverPage(): React.JSX.Element {
               .join('')
           : ''
       const request =
-        method === 'verify'
-          ? {
-              method: 'verify' as const,
-              sessionId: selected.session.logicalWorkSessionId,
-              expectedRevision: item.revision,
-              reviewedResultHash
-            }
-          : method === 'start'
+        method === 'reconcile'
+          ? { method: 'reconcile' as const, sessionId: selected.session.logicalWorkSessionId }
+          : method === 'verify'
             ? {
-                method: 'start' as const,
+                method: 'verify' as const,
                 sessionId: selected.session.logicalWorkSessionId,
-                expectedRevision: item.revision
+                expectedRevision: item.revision,
+                reviewedResultHash
               }
-            : { method: 'cancel' as const, sessionId: selected.session.logicalWorkSessionId }
+            : method === 'start'
+              ? {
+                  method: 'start' as const,
+                  sessionId: selected.session.logicalWorkSessionId,
+                  expectedRevision: item.revision
+                }
+              : { method: 'cancel' as const, sessionId: selected.session.logicalWorkSessionId }
       setSelected((await window.api.dailyDriver.call(request)) as DailyDriverSessionView)
     } catch (cause) {
       showError(cause)

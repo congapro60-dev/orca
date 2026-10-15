@@ -140,6 +140,9 @@ module.exports = {
     // it is gitignored, but exclude it defensively so a stray local capture at
     // package time never bloats app.asar.
     '!pr-evidence{,/**/*}',
+    '!.alpha-cert-cache{,/**/*}',
+    '!test-results{,/**/*}',
+    '!playwright-report{,/**/*}',
     '!Casks{,/**/*}',
     '!{AGENTS.md,CLAUDE.md,DEVELOPING.md,bundle-size-progress.md,ORCHESTRATION_IMPLEMENTATION_CHECKLIST.md,ORCHESTRATION_STRUCTURED_OUTPUT_DESIGN.md}',
     '!out/**/*.test.js',
@@ -350,6 +353,10 @@ module.exports = {
       {
         from: 'native/windows-cli-launcher/.build/orca.exe',
         to: 'bin/orca.exe'
+      },
+      {
+        from: 'out/owned-process',
+        to: 'bin/owned-process'
       },
       {
         from: 'node_modules/agent-browser/bin/agent-browser-win32-x64.exe',

@@ -37,7 +37,8 @@ export class CodexExecutionSupervisor {
           payloadHash: string
         }
       | AbortSignal,
-    externalSignal?: AbortSignal
+    externalSignal?: AbortSignal,
+    beforeDispatch?: () => Promise<void>
   ): Promise<CodexExecutionRecord> {
     if (mutationReceipt instanceof AbortSignal) {
       externalSignal = mutationReceipt
@@ -50,6 +51,7 @@ export class CodexExecutionSupervisor {
       throw new Error('Runtime input must match the native Task specification')
     }
     const prepared = await this.prepare(request)
+    await beforeDispatch?.()
     externalSignal?.throwIfAborted()
     const executionId = randomUUID()
     const canonical = {
@@ -70,6 +72,7 @@ export class CodexExecutionSupervisor {
       await this.adapter.start(canonical, {
         executionId,
         signal: preparation.signal,
+        beforeDispatch,
         observe: (snapshot, event) => this.store.save(snapshot, event)
       })
     } catch (error) {

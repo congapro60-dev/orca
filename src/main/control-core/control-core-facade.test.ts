@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { ControlCoreFacade } from './control-core-facade'
 import { coreFixture } from './control-core-test-fixture'
+import { randomUUID } from 'node:crypto'
+import { mkdirSync } from 'node:fs'
+import { join } from 'node:path'
+import type { CodexRuntimeReceipt } from '../../shared/codex-runtime-contract'
+import { CodexExecutionStore } from '../runtime/orchestration/codex-execution-store'
+import { checkpointRuntime } from './checkpoint-runtime'
+import { attemptCheckpoint } from './attempt-checkpoint'
+import { ControlWorkStore } from './control-work-store'
 
 const fixtures: ReturnType<typeof coreFixture>[] = []
 function setup() {
@@ -17,9 +25,85 @@ afterEach(() => {
 describe('Control Core canonical graph and verification', () => {
   it('retries rejected work within the same logical identity while retaining prior evidence', async () => {
     const f = setup()
-    const { session, item } = f.create()
-    const first = await f.complete(item.workItemId)
-    const published = f.core.publishArtifact(
+    const workspace = join(f.directory, 'workspace')
+    mkdirSync(workspace)
+    const native = () => new CodexExecutionStore(f.db, 'facade-retry-fixture')
+    f.runtime.start.mockImplementation(async (taskId, request) =>
+      native().accept(taskId, randomUUID(), request.worktree)
+    )
+    f.runtime.get.mockImplementation((id) => native().require(id))
+    f.runtime.result.mockImplementation(async (id) => {
+      if (native().require(id).status === 'STARTING') {
+        const receipt: CodexRuntimeReceipt = {
+          executionId: id,
+          requestedRuntime: 'codex',
+          resolvedExecutablePath: f.environment.executablePath,
+          resolvedExecutableVersion: 'fixture',
+          runtimeProtocol: 'codex-app-server-jsonrpc-v2',
+          requestedModel: null,
+          resolvedModel: null,
+          actualModel: 'UNKNOWN_UNVERIFIED',
+          effectiveSandbox: 'READ_ONLY',
+          approvalPolicy: 'never',
+          worktree: workspace,
+          codexHome: f.environment.codexHome,
+          threadId: randomUUID(),
+          turnId: randomUUID()
+        }
+        native().save({ receipt, status: 'RUNNING', text: '', error: null })
+        native().save({
+          receipt,
+          status: 'COMPLETED',
+          text: 'DONE: fixture result, not verification authority',
+          error: null,
+          processObservations: [
+            {
+              incarnationId: randomUUID(),
+              pid: 77,
+              scope: 'owned-process-launcher',
+              verdict: 'exited',
+              treeVerdict: 'exited',
+              observedAt: new Date().toISOString(),
+              exitCode: 0,
+              signal: null,
+              ownedTree: {
+                protocol: 'orca-owned-process-v1',
+                launcherSha256: 'a'.repeat(64),
+                rootPid: 78,
+                activeProcesses: 0,
+                totalProcesses: 1,
+                childExitCode: 0
+              }
+            }
+          ]
+        })
+      }
+      const record = native().require(id)
+      f.records.set(id, record)
+      return record
+    })
+    const core = new ControlCoreFacade(
+      f.db,
+      checkpointRuntime(f.db, f.runtime),
+      f.environment,
+      f.verifier
+    )
+    const session = core.createSession({
+      projectId: 'project-test',
+      worktree: workspace,
+      objective: 'Inspect the selected workspace',
+      doneWhen: ['Return evidence'],
+      constraints: ['Do not write files']
+    })
+    const item = core
+      .openSession(session.logicalWorkSessionId)
+      .items.find((i) => i.branchId === 'main')!
+    const complete = async () => {
+      await core.start(item.workItemId, core.item(item.workItemId).revision)
+      return core.wait(item.workItemId)
+    }
+    const first = await complete()
+    const published = core.publishArtifact(
       item.workItemId,
       first.revision,
       'artifact:first-attempt'
@@ -29,14 +113,18 @@ describe('Control Core canonical graph and verification', () => {
       evidenceRefs: ['review:incorrect-result'],
       reason: 'Required evidence missing'
     })
-    const rejected = await f.core.verify(item.workItemId, published.revision)
+    const rejected = await core.verify(item.workItemId, published.revision)
     expect(rejected.status).toBe('FAILED')
-    expect(f.core.openSession(session.logicalWorkSessionId).session.status).toBe('ACTIVE')
-    const second = await f.complete(item.workItemId)
+    expect(core.openSession(session.logicalWorkSessionId).session.status).toBe('ACTIVE')
+    const second = await complete()
     expect(second.executionId).not.toBe(first.executionId)
     expect(second.logicalWorkSessionId).toBe(first.logicalWorkSessionId)
     expect(f.records.get(first.executionId!)?.result).toContain('fixture result')
-    await f.core.verify(item.workItemId, second.revision)
+    expect(core.latestDecision(item.workItemId)?.status).toBe('ELIGIBLE')
+    expect(
+      attemptCheckpoint(new ControlWorkStore(f.db), item.workItemId, first.executionId!)
+    ).not.toBeNull()
+    await core.verify(item.workItemId, second.revision)
     const restored = f.reopen().openSession(session.logicalWorkSessionId)
     expect(restored.session.status).toBe('COMPLETED')
     expect(restored.events.find((e) => e.type === 'ARTIFACT_PUBLISHED')?.payload.artifactRef).toBe(

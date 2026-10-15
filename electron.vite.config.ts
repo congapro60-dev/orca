@@ -1,4 +1,6 @@
 import { isBuiltin } from 'node:module'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig, type UserConfig } from 'electron-vite'
 import react from '@vitejs/plugin-react'
@@ -6,6 +8,12 @@ import tailwindcss from '@tailwindcss/vite'
 import { createBootstrapFatalExitBanner } from './config/build-plugins/bootstrap-fatal-exit-banner'
 import { createPlainNodeEntryGuardPlugin } from './config/build-plugins/plain-node-entry-guard'
 import packageJson from './package.json' with { type: 'json' }
+
+const ownedLauncherBinary = resolve('out/owned-process/orca-owned-process-tree.exe')
+const ownedLauncherHash =
+  process.platform === 'win32' && existsSync(ownedLauncherBinary)
+    ? createHash('sha256').update(readFileSync(ownedLauncherBinary)).digest('hex')
+    : null
 
 const BUNDLED_MAIN_DEPENDENCIES = new Set([
   '@xterm/headless',
@@ -261,6 +269,7 @@ export const electronViteConfig: UserConfig = {
     // Why: compile-time substitution for the telemetry gate. See the block
     // above for the full rationale.
     define: {
+      ORCA_OWNED_LAUNCHER_SHA256: JSON.stringify(ownedLauncherHash),
       ORCA_BUILD_IDENTITY: ORCA_BUILD_IDENTITY_LITERAL,
       ORCA_POSTHOG_WRITE_KEY: ORCA_POSTHOG_WRITE_KEY_LITERAL,
       ORCA_DIAGNOSTICS_TOKEN_URL: ORCA_DIAGNOSTICS_TOKEN_URL_LITERAL

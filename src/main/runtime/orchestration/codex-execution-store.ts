@@ -5,6 +5,14 @@ import type {
   CodexExecutionStatus
 } from '../../../shared/codex-runtime-contract'
 import { redactString } from '../../observability/redactor'
+import { CodexCommandsSchema, sanitizedCodexCommands } from '../../codex/codex-command-evidence'
+import type { CommandEvidence } from '../../../shared/control-evidence-contract'
+import type { CodexProcessObservation } from '../../../shared/codex-process-contract'
+import {
+  readProcessObservations,
+  writeProcessObservations
+} from './codex-process-observation-store'
+import { markCodexExecutionUnknown } from './codex-execution-unknown'
 import type { OrchestrationDb } from './db'
 import {
   failWorkerStartInTransaction,
@@ -22,6 +30,8 @@ export type CodexExecutionRecord = {
   receipt: CodexRuntimeReceipt | null
   result: string | null
   error: string | null
+  commands?: CommandEvidence[] | null
+  processObservations?: CodexProcessObservation[]
 }
 
 type ExecutionRow = {
@@ -38,7 +48,6 @@ type ExecutionRow = {
 }
 const ACTIVE = new Set<CodexExecutionStatus>(['STARTING', 'RUNNING'])
 
-/** Uses the existing native connection and Task.result; never a parallel Task store. */
 export class CodexExecutionStore {
   constructor(
     private readonly native: OrchestrationDb,
@@ -96,8 +105,17 @@ export class CodexExecutionStore {
       status: row.status,
       receipt: row.receipt_json ? JSON.parse(row.receipt_json) : null,
       result: row.result,
-      error: row.error
+      error: row.error,
+      commands: this.commandEvidence(id),
+      processObservations: readProcessObservations(this.native, id)
     }
+  }
+
+  commandEvidence(id: string): CommandEvidence[] | null {
+    const row = this.native.db
+      .prepare('SELECT snapshot FROM codex_runtime_command_evidence WHERE execution_id=?')
+      .get(id) as { snapshot: string } | undefined
+    return row ? CodexCommandsSchema.parse(JSON.parse(row.snapshot)) : null
   }
 
   events(id: string, after = 0): CodexRuntimeEvent[] {
@@ -137,6 +155,15 @@ export class CodexExecutionStore {
           JSON.stringify(record.receipt) === JSON.stringify(snapshot.receipt)
         ) {
           if ((record.result ?? '') === snapshot.text || record.status !== 'COMPLETED') {
+            if (
+              snapshot.commands !== undefined &&
+              JSON.stringify(record.commands) !==
+                JSON.stringify(
+                  snapshot.commands == null ? null : sanitizedCodexCommands(snapshot.commands)
+                )
+            ) {
+              throw new Error('Cannot replace terminal Codex command evidence')
+            }
             this.native.db.exec('COMMIT')
             return
           }
@@ -163,6 +190,24 @@ export class CodexExecutionStore {
         markWorkerDispatchReadyInTransaction.call(this.native, record.dispatchId)
       }
       if (!ACTIVE.has(snapshot.status)) {
+        if (snapshot.processObservations) {
+          writeProcessObservations(this.native, record.executionId, snapshot.processObservations)
+        }
+        if (snapshot.commands != null) {
+          if (
+            !snapshot.receipt.threadId ||
+            !snapshot.receipt.turnId ||
+            snapshot.commands.length > 64
+          ) {
+            throw new Error('Unacknowledged or excessive Codex command evidence')
+          }
+          const commands = sanitizedCodexCommands(snapshot.commands)
+          this.native.db
+            .prepare(
+              'INSERT INTO codex_runtime_command_evidence (execution_id,snapshot) VALUES (?,?)'
+            )
+            .run(record.executionId, JSON.stringify(commands))
+        }
         this.settle(record, snapshot)
         if (snapshot.status === 'COMPLETED') {
           this.native.db
@@ -205,8 +250,10 @@ export class CodexExecutionStore {
     try {
       for (const row of rows) {
         const record = this.require(row.execution_id)
-        this.markUnknown(
-          record,
+        markCodexExecutionUnknown(
+          this.native,
+          record.taskId,
+          record.dispatchId,
           'Previous runtime is not observable; reconcile before another execution'
         )
         this.native.db
@@ -224,7 +271,12 @@ export class CodexExecutionStore {
 
   private settle(record: CodexExecutionRecord, snapshot: CodexRuntimeResult): void {
     if (snapshot.status === 'OUTCOME_UNKNOWN') {
-      this.markUnknown(record, snapshot.error ?? 'Runtime outcome unverified')
+      markCodexExecutionUnknown(
+        this.native,
+        record.taskId,
+        record.dispatchId,
+        snapshot.error ?? 'Runtime outcome unverified'
+      )
       return
     }
     const text = redactString(snapshot.text || snapshot.error || snapshot.status).slice(0, 128000)
@@ -253,19 +305,5 @@ export class CodexExecutionStore {
         .prepare("UPDATE worker_dispatches SET state = 'stopped' WHERE dispatch_id = ?")
         .run(record.dispatchId)
     }
-  }
-
-  private markUnknown(record: CodexExecutionRecord, error: string): void {
-    this.native.db
-      .prepare("UPDATE tasks SET status = 'blocked' WHERE id = ? AND status = 'dispatched'")
-      .run(record.taskId)
-    this.native.db
-      .prepare(`UPDATE worker_dispatches SET stage = 'programmatic_unverifiable',
-      last_error = ? WHERE dispatch_id = ?`)
-      .run(redactString(error).slice(0, 2000), record.dispatchId)
-    this.native.db
-      .prepare(`UPDATE dispatch_contexts SET capability_revoked_at =
-      COALESCE(capability_revoked_at, datetime('now')) WHERE id = ?`)
-      .run(record.dispatchId)
   }
 }

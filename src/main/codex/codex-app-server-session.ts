@@ -4,48 +4,39 @@ import type {
 } from '../../shared/child-process/run-process'
 import {
   killCodexAppServerProcessTree,
+  reapCodexAppServerProcess,
   spawnThroughProcessBoundary
 } from './codex-app-server-process'
 export { killCodexAppServerProcessTree } from './codex-app-server-process'
-import { waitForProcessExitUntil } from './codex-process-exit-deadline'
-import { stderrIndicatesMissingAppServer } from './codex-app-server-capability-signal'
+import {
+  stderrIndicatesMissingAppServer,
+  isCodexRpcMethodNotFound,
+  codexEarlyExitError
+} from './codex-app-server-capability-signal'
 import { withCliRuntimeOnPath } from '../../shared/node-cli-command-resolution'
-
-// Why: `codex app-server` is Orca's sanctioned RPC surface into Codex-owned
-// state (hook trust hashes, the sqlite thread index). This module owns the
-// stdio JSONL transport — spawn, handshake, framing, deadline, reap — so every
-// RPC consumer (trust grant, session index heal) shares one hardened lifecycle.
+import {
+  observeCodexProcess,
+  codexProcessObserverGuard,
+  publishTreeVerdict,
+  type CodexProcessObservation
+} from './codex-process-observation'
 
 export type CodexAppServerInvocation = {
   command: string
   args: string[]
-  /**
-   * The resolved CLI path, used to pair the CLI with the `node` it was installed
-   * against — without it a CLI resolved out of a version-manager directory runs
-   * under whatever node leads PATH and dies on a NODE_MODULE_VERSION mismatch
-   * (stablyai/orca#10932).
-   *
-   * Required, and `null` only for a guest-side launcher (wsl.exe) where the host
-   * path means nothing. Optional would let a native builder omit it and silently
-   * fall back to pairing against a cmd.exe wrapper with no type error.
-   */
   cliPath: string | null
-  /** Overlay applied on top of the inherited environment (e.g. CODEX_HOME). */
   env?: Record<string, string>
   inheritEnv?: boolean
-  /** Env keys stripped from the inherited environment before spawn (e.g. an
-   *  inherited CODEX_HOME, so a default-home grant runs against the real ~/.codex). */
   envToDelete?: readonly string[]
-  /** Whole-session deadline. The codex child is SIGKILLed when it lapses. */
   timeoutMs: number
   cwd?: string
   signal?: AbortSignal
   onNotification?: (method: string, params: unknown) => void
+  onProcessObservation?: (observation: CodexProcessObservation) => void
+  verifyProcessTree?: (pid: number | null) => Promise<'exited' | 'unverifiable'>
+  gracefulShutdownMs?: number
 }
 
-/** Codex-side absence of the requested app-server RPC surface (old CLI without
- *  the app-server subcommand, or a server without the called methods).
- *  This is the ONLY error class capability caches mark unsupported. */
 export class CodexAppServerUnsupportedError extends Error {
   constructor(message: string) {
     super(message)
@@ -77,27 +68,40 @@ export type CodexAppServerRpc = {
   notify: (method: string, params?: Record<string, unknown>) => void
 }
 
-const JSON_RPC_METHOD_NOT_FOUND = -32601
 const STDERR_TAIL_MAX_BYTES = 8192
 const STDOUT_LINE_MAX_BYTES = 1024 * 1024
 
-function isMethodNotFoundError(error: { code?: number; message?: string }): boolean {
-  return error.code === JSON_RPC_METHOD_NOT_FOUND || /method not found/i.test(error.message ?? '')
-}
-
-/**
- * Runs one short-lived `codex app-server` session over stdio JSON-RPC (JSONL):
- * spawn → initialize → initialized → body(rpc) → EOF/reap. The child is reaped
- * on every path; the session deadline SIGKILLs it.
- */
 export async function runCodexAppServerSession<T>(
   invocation: CodexAppServerInvocation,
   body: (rpc: CodexAppServerRpc) => Promise<T>,
   spawnImpl: ProcessSpawnImplementation = spawnThroughProcessBoundary
 ): Promise<T> {
+  const graceMs = invocation.gracefulShutdownMs ?? 1500
+  if (!Number.isInteger(graceMs) || graceMs < 1 || graceMs > 10000) {
+    throw new Error('Invalid app-server graceful shutdown bound')
+  }
+  if (!invocation.onProcessObservation) {
+    return runObservedSession(invocation, body, spawnImpl)
+  }
+  const guard = codexProcessObserverGuard(invocation.onProcessObservation)
+  const result = await runObservedSession(
+    {
+      ...invocation,
+      onProcessObservation: guard.publish
+    },
+    body,
+    spawnImpl
+  )
+  guard.assert()
+  return result
+}
+
+async function runObservedSession<T>(
+  invocation: CodexAppServerInvocation,
+  body: (rpc: CodexAppServerRpc) => Promise<T>,
+  spawnImpl: ProcessSpawnImplementation = spawnThroughProcessBoundary
+): Promise<T> {
   invocation.signal?.throwIfAborted()
-  // Why: a default-home grant must run against the real ~/.codex, so strip an
-  // inherited CODEX_HOME (envToDelete) after applying the overlay, not before.
   const childEnv: NodeJS.ProcessEnv = {
     ...(invocation.inheritEnv === false ? {} : process.env),
     ...invocation.env
@@ -117,6 +121,7 @@ export async function runCodexAppServerSession<T>(
 
   let stderrTail = ''
   let exited = false
+  let lastObservation: CodexProcessObservation | null = null
   let nextRequestId = 1
   let timedOut = false
   let sessionError: Error | null = null
@@ -129,43 +134,29 @@ export async function runCodexAppServerSession<T>(
     rejectSession = reject
   })
   void sessionFailure.catch(() => {})
-
   const exitPromise = new Promise<void>((resolve) => {
     child.on('exit', () => {
       exited = true
       resolve()
     })
   })
-  // Why: 'error' fires instead of 'exit' when the spawn itself fails
-  // (ENOENT); surface it to every in-flight request or they wait forever.
-  let spawnError: Error | null = null
   child.on('error', (error) => {
-    spawnError = error
-    exited = true
     failPending(error)
   })
-  // Why: 'close' (not 'exit') guarantees the stderr tail is complete, so an
-  // early death classifies correctly as missing-subcommand vs transient.
   child.on('close', () => {
-    failPending(buildEarlyExitError())
+    failPending(codexEarlyExitError(stderrTail))
   })
-  // Why: JSONL can contain non-ASCII hook paths. Stream decoding must retain a
-  // multibyte character split across pipe chunks or the response becomes invalid JSON.
-  child.stderr.setEncoding('utf8').on('data', (chunk: string) => {
+  const acceptStderr = (chunk: string): void => {
     stderrTail = (stderrTail + chunk).slice(-STDERR_TAIL_MAX_BYTES)
-  })
-  // Why: a child can exit between the liveness check and stdin.write(); an
-  // EPIPE must reject the RPC instead of becoming an unhandled stream error.
+  }
   child.stdin.on('error', (error) => {
     failPending(error)
   })
 
   let stdoutBuffer = ''
-  child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
+  const acceptStdout = (chunk: string): void => {
     stdoutBuffer += chunk
     if (Buffer.byteLength(stdoutBuffer) > STDOUT_LINE_MAX_BYTES) {
-      // Why: Windows process-tree termination is asynchronous; stop buffered
-      // chunks from spawning another taskkill for the same oversized response.
       child.stdout.destroy()
       killCodexAppServerProcessTree(child)
       failPending(new Error('codex app-server emitted an oversized JSONL response'))
@@ -204,7 +195,9 @@ export async function runCodexAppServerSession<T>(
         waiter.resolve(message)
       }
     }
-  })
+  }
+  child.stdout.setEncoding('utf8').on('data', acceptStdout)
+  child.stderr.setEncoding('utf8').on('data', acceptStderr)
 
   function failPending(error: Error): void {
     sessionError ??= error
@@ -214,38 +207,33 @@ export async function runCodexAppServerSession<T>(
     }
     pending.clear()
   }
-
   const deadline = setTimeout(() => {
     timedOut = true
     const error = new CodexAppServerTimeoutError(
       `codex app-server session exceeded ${invocation.timeoutMs}ms (${invocation.command})`
     )
-    killCodexAppServerProcessTree(child)
+    if (invocation.gracefulShutdownMs === undefined) {
+      killCodexAppServerProcessTree(child)
+    }
     failPending(error)
   }, invocation.timeoutMs)
   const abort = (): void => {
     failPending(new Error('codex app-server session aborted'))
-    killCodexAppServerProcessTree(child)
+    if (invocation.gracefulShutdownMs === undefined) {
+      killCodexAppServerProcessTree(child)
+    }
   }
   invocation.signal?.addEventListener('abort', abort, { once: true })
   if (invocation.signal?.aborted) {
     abort()
   }
-
   function sendLine(payload: Record<string, unknown>): void {
     child.stdin.write(`${JSON.stringify(payload)}\n`)
   }
-
   function notify(method: string, params?: Record<string, unknown>): void {
-    const payload: Record<string, unknown> = { method }
-    if (params !== undefined) {
-      payload.params = params
-    }
     try {
-      sendLine(payload)
-    } catch {
-      // Notifications are fire-and-forget; a dead child fails the next request.
-    }
+      sendLine({ method, ...(params !== undefined ? { params } : {}) })
+    } catch {}
   }
 
   async function requestRpc(method: string, params?: Record<string, unknown>): Promise<unknown> {
@@ -253,14 +241,11 @@ export async function runCodexAppServerSession<T>(
     if (sessionError) {
       throw sessionError
     }
-    if (spawnError) {
-      throw spawnError
-    }
     if (timedOut) {
       throw new CodexAppServerTimeoutError('codex app-server session already timed out')
     }
     if (exited) {
-      throw buildEarlyExitError()
+      throw codexEarlyExitError(stderrTail)
     }
     const id = nextRequestId++
     const response = await new Promise<JsonRpcResponse>((resolve, reject) => {
@@ -277,7 +262,7 @@ export async function runCodexAppServerSession<T>(
       }
     })
     if (response.error) {
-      if (isMethodNotFoundError(response.error)) {
+      if (isCodexRpcMethodNotFound(response.error)) {
         throw new CodexAppServerUnsupportedError(
           `codex app-server does not support ${method}: ${response.error.message ?? 'method not found'}`
         )
@@ -289,18 +274,12 @@ export async function runCodexAppServerSession<T>(
     return response.result
   }
 
-  function buildEarlyExitError(): Error {
-    if (stderrIndicatesMissingAppServer(stderrTail)) {
-      return new CodexAppServerUnsupportedError(
-        `codex CLI does not support the app-server subcommand: ${stderrTail.trim().slice(0, 400)}`
-      )
-    }
-    return new Error(
-      `codex app-server exited before completing the session${stderrTail ? `: ${stderrTail.trim().slice(0, 400)}` : ''}`
-    )
-  }
-
   try {
+    const observe = (value: CodexProcessObservation) => (
+      (lastObservation = value),
+      invocation.onProcessObservation?.(value)
+    )
+    observeCodexProcess(child, observe, failPending)()
     const session = async (): Promise<T> => {
       await requestRpc('initialize', {
         clientInfo: { name: 'orca_desktop', title: 'Orca', version: '0.0.0' }
@@ -308,8 +287,6 @@ export async function runCodexAppServerSession<T>(
       notify('initialized')
       return body({ request: requestRpc, notify })
     }
-    // Why: the timeout owns the whole callback, including time between RPCs;
-    // killing the child alone cannot settle a callback awaiting unrelated work.
     return await Promise.race([session(), sessionFailure])
   } catch (error) {
     if (
@@ -325,20 +302,12 @@ export async function runCodexAppServerSession<T>(
     throw error
   } finally {
     invocation.signal?.removeEventListener('abort', abort)
-    try {
-      child.stdin.end()
-    } catch {
-      // stdin may already be destroyed after a kill; reaping below still runs.
-    }
-    if (!exited) {
-      // Why: the server exits promptly on stdin EOF; the grace period only
-      // bounds a wedged child before the guaranteed SIGKILL reap.
-      await waitForProcessExitUntil(exitPromise, 1500)
-      if (!exited) {
-        killCodexAppServerProcessTree(child)
-        await waitForProcessExitUntil(exitPromise, 1000)
-      }
-    }
     clearTimeout(deadline)
+    await reapCodexAppServerProcess(child, exitPromise, () => exited, invocation.gracefulShutdownMs)
+    await publishTreeVerdict(
+      lastObservation as CodexProcessObservation | null,
+      invocation.verifyProcessTree,
+      invocation.onProcessObservation
+    )
   }
 }

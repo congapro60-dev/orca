@@ -6,7 +6,6 @@ import type {
   CodexRuntimeEvent,
   CodexRuntimeResult
 } from '../../shared/codex-runtime-contract'
-import { redactString } from '../observability/redactor'
 import { runCodexAppServerSession, type CodexAppServerRpc } from './codex-app-server-session'
 import {
   CodexRuntimeRequestSchema,
@@ -18,6 +17,8 @@ import {
 import { codexRuntimePreflight, verifyCodexRuntimeTools } from './codex-runtime-preflight'
 import { CodexRuntimeTurnEvents } from './codex-runtime-turn-events'
 import { codexRuntimeMcpOverrides } from './codex-runtime-mcp-overrides'
+import { codexRuntimeError, codexTurnError } from './codex-runtime-error'
+import { runManagedCodexSession } from './codex-runtime-session'
 
 const MAX_EVENTS = 256
 type Execution = {
@@ -37,9 +38,9 @@ export type CodexRuntimeStartOptions = {
   executionId?: string
   observe?: Execution['observe']
   signal?: AbortSignal
+  beforeDispatch?: () => Promise<void>
 }
 
-/** Runtime lifecycle only: Orca persistence, never this adapter, owns Task state. */
 export class CodexRuntimeAdapterV0 {
   private readonly executions = new Map<string, Execution>()
 
@@ -122,7 +123,7 @@ export class CodexRuntimeAdapterV0 {
       execution.detachAbort?.()
       throw error
     }
-    void this.execute(execution, request)
+    void this.execute(execution, request, options.beforeDispatch)
     return structuredClone(execution.result.receipt)
   }
 
@@ -145,17 +146,16 @@ export class CodexRuntimeAdapterV0 {
 
   async cancel(executionId: string): Promise<void> {
     const execution = this.require(executionId)
-    if (!['STARTING', 'RUNNING'].includes(execution.result.status)) {
-      return
+    if (['STARTING', 'RUNNING'].includes(execution.result.status)) {
+      execution.cancelRequested = true
+      this.append(execution, 'PROGRESS', 'turn/interruptRequested')
+      const { threadId, turnId } = execution.result.receipt
+      if (!threadId || !turnId || !execution.rpc) {
+        execution.controller.abort()
+      } else {
+        await execution.rpc.request('turn/interrupt', { threadId, turnId })
+      }
     }
-    execution.cancelRequested = true
-    this.append(execution, 'PROGRESS', 'turn/interruptRequested')
-    const { threadId, turnId } = execution.result.receipt
-    if (!threadId || !turnId || !execution.rpc) {
-      execution.controller.abort()
-      return
-    }
-    await execution.rpc.request('turn/interrupt', { threadId, turnId })
   }
 
   release(executionId: string): void {
@@ -195,7 +195,11 @@ export class CodexRuntimeAdapterV0 {
     )
   }
 
-  private async execute(execution: Execution, request: CodexRuntimeRequest): Promise<void> {
+  private async execute(
+    execution: Execution,
+    request: CodexRuntimeRequest,
+    beforeDispatch?: () => Promise<void>
+  ): Promise<void> {
     const receipt = execution.result.receipt
     let turnSubmitted = false
     const turns = new CodexRuntimeTurnEvents(receipt, (method, itemType) =>
@@ -203,7 +207,8 @@ export class CodexRuntimeAdapterV0 {
     )
     try {
       const mcpOverrides = await codexRuntimeMcpOverrides(receipt.codexHome)
-      await this.dependencies.session(
+      const session = this.dependencies.session
+      await (session === runCodexAppServerSession ? runManagedCodexSession : session)(
         {
           command: receipt.resolvedExecutablePath,
           cliPath: receipt.resolvedExecutablePath,
@@ -222,7 +227,9 @@ export class CodexRuntimeAdapterV0 {
           inheritEnv: false,
           timeoutMs: request.timeoutMs ?? 120000,
           signal: execution.controller.signal,
-          onNotification: (method, value) => turns.accept(method, value)
+          onNotification: (method, value) => turns.accept(method, value),
+          onProcessObservation: (observation) =>
+            (execution.result.processObservations ??= []).push(observation)
         },
         async (rpc) => {
           execution.rpc = rpc
@@ -247,6 +254,7 @@ export class CodexRuntimeAdapterV0 {
           receipt.effectiveSandbox = 'READ_ONLY'
           this.append(execution, 'PROGRESS', 'thread/start')
           await verifyCodexRuntimeTools(rpc, receipt.threadId, mcpOverrides.names)
+          await beforeDispatch?.()
           execution.controller.signal.throwIfAborted()
           turnSubmitted = true
           this.append(execution, 'PROGRESS', 'turn/submitting')
@@ -276,15 +284,7 @@ export class CodexRuntimeAdapterV0 {
             execution.result.status = 'CANCELLED'
           } else {
             execution.result.status = 'FAILED'
-            const detail = done.error as { message?: unknown } | null
-            execution.result.error =
-              done.status === 'failed'
-                ? redactString(
-                    typeof detail?.message === 'string'
-                      ? detail.message
-                      : 'Codex reported a failed turn'
-                  ).slice(0, 2000)
-                : 'Codex did not return a complete result'
+            execution.result.error = codexTurnError(done)
           }
         }
       )
@@ -294,19 +294,16 @@ export class CodexRuntimeAdapterV0 {
         : execution.cancelRequested
           ? 'CANCELLED'
           : 'FAILED'
-      execution.result.error = redactString(
-        error instanceof Error ? error.message : String(error)
-      ).slice(0, 2000)
+      execution.result.error = codexRuntimeError(error)
     } finally {
+      execution.result.commands = turns.commandEvidence()
       execution.detachAbort?.()
       execution.rpc = undefined
       try {
         this.append(execution, 'TERMINAL', 'execution/settled')
       } catch (error) {
         execution.result.status = 'OUTCOME_UNKNOWN'
-        execution.result.error = redactString(
-          error instanceof Error ? error.message : String(error)
-        ).slice(0, 2000)
+        execution.result.error = codexRuntimeError(error)
       }
       execution.settle(structuredClone(execution.result))
     }

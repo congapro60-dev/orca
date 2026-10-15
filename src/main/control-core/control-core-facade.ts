@@ -18,6 +18,8 @@ import {
   type MemoryVersion
 } from './control-memory-store'
 import { MemoryPromotionGate, type MemoryPromotionRequest } from './memory-promotion-gate'
+import { ControlEvidenceStore } from './control-evidence-store'
+import { reconcileResume, type ReconcileInput } from './resume-reconcile'
 
 /** User workflow boundary; dependency ports are supplied by the owning host, never a worker. */
 export class ControlCoreFacade {
@@ -139,6 +141,12 @@ export class ControlCoreFacade {
   }
   cancel(id: string) {
     return this.workRuntime.cancel(id)
+  }
+  reconcileResume(input: ReconcileInput) {
+    return reconcileResume(this.store, input)
+  }
+  latestDecision(itemId: string) {
+    return new ControlEvidenceStore(this.store).latestDecision(itemId)
   }
   verify(id: string, expectedRevision: number) {
     return this.verification.verify(id, expectedRevision)

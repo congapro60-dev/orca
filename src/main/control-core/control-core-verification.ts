@@ -5,6 +5,7 @@ import type { CoreRuntimePort } from './control-core-runtime'
 import { completionBarrier } from './completion-barrier'
 import type { ControlWorkStore } from './control-work-store'
 import { TaskJournalStore } from './task-journal'
+import { recordVerificationEvidence } from './verification-evidence'
 
 export type CoreVerificationPort = {
   verify: (input: {
@@ -40,7 +41,7 @@ export class ControlCoreVerification {
     if (session.status !== 'ACTIVE') {
       throw new Error('Logical session is closed')
     }
-    const execution = this.runtime.get(initial.executionId)
+    const execution = await this.runtime.result(initial.executionId)
     if (
       execution.status !== 'COMPLETED' ||
       execution.taskId !== initial.nativeTaskId ||
@@ -66,12 +67,19 @@ export class ControlCoreVerification {
       ) {
         throw new Error('WorkItem changed during verification')
       }
+      const evidenceRecordId = recordVerificationEvidence(
+        this.store,
+        current,
+        verdict.passed,
+        verdict.evidenceRefs
+      )
       if (!verdict.passed) {
         const rejected = this.store.save({ ...current, status: 'FAILED' })
         this.store.event(rejected, 'WORK_FAILED', {
           verification: 'rejected',
           executionId: current.executionId,
           evidenceRefs: verdict.evidenceRefs,
+          evidenceRecordId,
           reason: verdict.reason ?? 'Evidence gate rejected'
         })
         return rejected
@@ -79,7 +87,13 @@ export class ControlCoreVerification {
       const verified = this.store.save({
         ...current,
         status: 'VERIFIED',
-        evidenceRefs: [...new Set([...current.evidenceRefs, ...verdict.evidenceRefs])]
+        evidenceRefs: [
+          ...new Set([
+            ...current.evidenceRefs,
+            ...verdict.evidenceRefs,
+            ...(evidenceRecordId ? [`evidence:${evidenceRecordId}`] : [])
+          ])
+        ]
       })
       this.store.event(verified, 'WORK_VERIFIED', { evidenceRefs: verified.evidenceRefs })
       this.completeRoot(session.logicalWorkSessionId)

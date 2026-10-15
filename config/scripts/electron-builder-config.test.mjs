@@ -85,7 +85,11 @@ describe('electron-builder config', () => {
 
     for (const devBundlePath of [
       'out/electron-dev/1a2b3c4d5e6f/Orca: dev.app/Contents/MacOS/Electron',
-      'out/electron-dev/1a2b3c4d5e6f/orca-dev-electron-app.json'
+      'out/electron-dev/1a2b3c4d5e6f/orca-dev-electron-app.json',
+      '.alpha-cert-cache/owned-account-diagnostic.cjs',
+      '.alpha-cert-cache/profile/auth.json',
+      'test-results/fixture/trace.zip',
+      'playwright-report/index.html'
     ]) {
       expect(packs(devBundlePath)).toBe(false)
     }
@@ -133,6 +137,10 @@ describe('electron-builder config', () => {
         expect.objectContaining({
           from: 'native/windows-cli-launcher/.build/orca.exe',
           to: 'bin/orca.exe'
+        }),
+        expect.objectContaining({
+          from: 'out/owned-process',
+          to: 'bin/owned-process'
         })
       ])
     )

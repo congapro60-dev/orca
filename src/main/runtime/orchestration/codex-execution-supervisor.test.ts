@@ -68,12 +68,32 @@ function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean
           }
         }
         if (method === 'turn/start') {
+          invocation.onProcessObservation?.({
+            incarnationId: 'fixture-process',
+            pid: 77,
+            scope: 'app-server-child',
+            verdict: 'live',
+            observedAt: new Date().toISOString(),
+            exitCode: null,
+            signal: null
+          })
           const before = db.db.prepare('SELECT COUNT(*) AS n FROM codex_runtime_executions').get()
           expect(before?.n).toBe(1)
           expect(params?.input).toEqual([{ type: 'text', text: request.prompt }])
           if (options.disconnect) {
             throw new Error('Lost transport after submit')
           }
+          invocation.onNotification?.('item/completed', {
+            threadId: 'thread-live',
+            turnId: 'turn-live',
+            item: {
+              id: 'command-live',
+              type: 'commandExecution',
+              command: 'git status',
+              status: 'completed',
+              exitCode: 0
+            }
+          })
           invocation.onNotification?.('item/completed', {
             threadId: 'thread-live',
             turnId: 'turn-live',
@@ -85,6 +105,15 @@ function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean
           })
           if (!options.hold) {
             emit(options.fail ? 'failed' : 'completed')
+            invocation.onProcessObservation?.({
+              incarnationId: 'fixture-process',
+              pid: 77,
+              scope: 'app-server-child',
+              verdict: 'exited',
+              observedAt: new Date().toISOString(),
+              exitCode: 0,
+              signal: null
+            })
           }
           return { turn: { id: 'turn-live' } }
         }
@@ -108,6 +137,19 @@ function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean
 }
 
 describe('Native Codex execution supervisor', () => {
+  it('carries early command evidence through the adapter into native persistence', async () => {
+    const { supervisor, task, request } = fixture()
+    const row = await supervisor.start(task.id, request)
+    const result = await supervisor.result(row.executionId)
+    expect(result.commands).toEqual([
+      { itemId: 'command-live', command: 'git status', status: 'completed', exitCode: 0 }
+    ])
+    expect(result.processObservations?.at(-1)).toMatchObject({
+      verdict: 'exited',
+      scope: 'app-server-child'
+    })
+    expect(result.processObservations?.[0].incarnationId).toBeDefined()
+  })
   it('does not accept or start an execution cancelled during preflight', async () => {
     const { supervisor, db, task, request, prepare, protocolMethods } = fixture()
     let release!: (value: {
