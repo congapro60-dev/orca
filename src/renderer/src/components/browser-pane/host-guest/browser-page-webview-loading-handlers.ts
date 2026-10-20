@@ -11,6 +11,7 @@ import { releaseBrowserPageMount } from './browser-page-mount-admission'
 import { rememberLiveBrowserUrl } from '../describe-page/live-browser-url-registry'
 import type { BrowserOverlayViewport } from '../describe-page/browser-annotation-geometry'
 import { resolveBrowserWebviewLoadFailure } from '../navigate/browser-webview-load-failure'
+import { isBlockedByExtensionLoadError } from '../navigate/browser-notices'
 import {
   getBrowserDisplayTitle,
   isChromiumErrorPage,
@@ -112,7 +113,11 @@ export function createBrowserPageWebviewLoadingHandlers({
         normalizeBrowserNavigationUrl(activeLoadFailure.validatedUrl) ??
         activeLoadFailure.validatedUrl
       const normalizedCurrentUrl = normalizeBrowserNavigationUrl(browserModelUrl) ?? browserModelUrl
-      if (normalizedAttemptedUrl === normalizedCurrentUrl) {
+      // Why -20: a load an extension blocked never commits, so the guest still shows the old URL.
+      if (
+        normalizedAttemptedUrl === normalizedCurrentUrl ||
+        isBlockedByExtensionLoadError(activeLoadFailure)
+      ) {
         // Why: some failures still emit did-stop-loading on the original URL; keep loadError so the known-failed load isn't cleared to a blank surface.
         onUpdatePageStateRef.current(browserTabId, {
           loading: false,
