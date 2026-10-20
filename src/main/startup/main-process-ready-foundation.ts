@@ -43,6 +43,8 @@ import { installMediaPreviewProtocolHandler } from '../media/media-preview-proto
 import { installJiraImageProtocolHandler } from '../jira/attachments/image-protocol'
 import { registerDocPreviewGrantHandlers } from '../ipc/doc-preview-grant-ipc'
 import { initializeBrowserSessionsForApp } from '../browser/browser-session-startup'
+import { initializeBrowserExtensionSupport } from '../browser/extensions/browser-extension-startup'
+import { whenBrowserExtensionSessionsLoaded } from '../browser/extensions/browser-extension-session-loader'
 import { browserSessionRegistry } from '../browser/browser-session-registry'
 import { logStartupMilestone } from './startup-diagnostics'
 import { writeHttp1CompatibilityMarker } from './http1-compatibility-marker'
@@ -277,6 +279,11 @@ export async function initializeReadyFoundation(): Promise<void> {
   installJiraImageProtocolHandler()
   installDocPreviewProtocolHandler()
   registerDocPreviewGrantHandlers()
+  // Why before sessions: the session setup hook loads extensions only once support is decided.
+  initializeBrowserExtensionSupport({
+    enabled: store.getSettings().experimentalBrowserExtensions === true,
+    savedBrowserTabs: store
+  })
   // Why: browser sessions serve desktop webviews and runtime profile commands, so init at app startup rather than via a renderer IPC path.
   initializeBrowserSessionsForApp({
     orcaProfileId: profile.profile.id,
@@ -300,4 +307,6 @@ export async function initializeReadyFoundation(): Promise<void> {
   } catch {
     console.warn('[proxy] Failed to apply network proxy settings to browser sessions')
   }
+  // Why bounded: restored tabs should get content scripts, but a slow extension never blocks launch.
+  await whenBrowserExtensionSessionsLoaded(3_000)
 }
