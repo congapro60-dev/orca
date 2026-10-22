@@ -25,6 +25,71 @@ afterEach(() => {
 })
 
 describe('Control Core runtime attempt lifecycle', () => {
+  it('refuses permission escalation before reserving a native attempt', async () => {
+    const f = setup()
+    const { item } = f.create()
+    await expect(
+      f.core.start(item.workItemId, item.revision, [], {
+        runtime: 'codex',
+        permissionMode: 'WORKSPACE_WRITE'
+      })
+    ).rejects.toThrow(/canonical session permission/)
+    expect(f.core.item(item.workItemId)).toEqual(item)
+    expect(f.db.db.prepare('SELECT COUNT(*) AS n FROM control_work_attempts').get()?.n).toBe(0)
+    expect(f.runtime.start).not.toHaveBeenCalled()
+  })
+
+  it('uses persisted write permission after reopening and defaults legacy sessions to read-only', async () => {
+    const f = setup()
+    const legacy = f.create()
+    f.db.db
+      .prepare('DELETE FROM control_work_session_profiles WHERE session_id=?')
+      .run(legacy.session.logicalWorkSessionId)
+    const writable = f.core.createSession({
+      projectId: 'test',
+      worktree: f.directory,
+      objective: 'Bounded change',
+      permissionMode: 'WORKSPACE_WRITE'
+    })
+    const core = f.reopen()
+    expect(core.openSession(legacy.session.logicalWorkSessionId).session.permissionMode).toBe(
+      'READ_ONLY'
+    )
+    const item = core
+      .openSession(writable.logicalWorkSessionId)
+      .items.find((row) => row.branchId === 'main')!
+    await core.start(item.workItemId, item.revision)
+    expect(f.runtime.start.mock.calls[0]?.[1].permissionMode).toBe('WORKSPACE_WRITE')
+  })
+
+  it('rejects an invalid session permission atomically', () => {
+    const f = setup()
+    const runsBefore = f.db.db.prepare('SELECT COUNT(*) AS n FROM runs').get()?.n
+    expect(() =>
+      f.core.createSession({
+        projectId: 'test',
+        worktree: f.directory,
+        objective: 'No bypass',
+        permissionMode: 'FULL_ACCESS' as never
+      })
+    ).toThrow()
+    expect(f.db.db.prepare('SELECT COUNT(*) AS n FROM control_work_sessions').get()?.n).toBe(0)
+    expect(f.db.db.prepare('SELECT COUNT(*) AS n FROM runs').get()?.n).toBe(runsBefore)
+  })
+  it('independently fences a foreign native dispatch permission', () => {
+    const f = setup()
+    const { session, item } = f.create()
+    const task = f.db.createTask({ spec: 'Native boundary test', runId: session.runId })
+    f.db.db
+      .prepare('INSERT INTO control_work_attempts(task_id,item_id,created_at) VALUES (?,?,?)')
+      .run(task.id, item.workItemId, new Date().toISOString())
+    const native = new CodexExecutionStore(f.db, 'test-epoch')
+    expect(() =>
+      native.accept(task.id, randomUUID(), f.directory, undefined, 'WORKSPACE_WRITE')
+    ).toThrow(/canonical session permission/)
+    expect(f.db.getTask(task.id)?.status).toBe('ready')
+    expect(f.db.getDispatchContext(task.id)).toBeUndefined()
+  })
   it('serializes admission across logical sessions even on different workspaces', async () => {
     const f = setup()
     const other = setup()

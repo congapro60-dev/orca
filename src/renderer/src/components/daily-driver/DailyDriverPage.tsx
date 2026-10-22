@@ -1,24 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Loader2, Play } from 'lucide-react'
 import type {
   DailyDriverProject,
   DailyDriverSessionView
 } from '../../../../shared/daily-driver-contract'
 import type { LogicalWorkSession, WorkItem } from '../../../../shared/control-core-contract'
 import { translate } from '@/i18n/i18n'
+import { useAppStore } from '@/store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { DailyDriverSessionPanel } from './DailyDriverSessionPanel'
+import { DailyDriverConversation } from './DailyDriverConversation'
+import { DailyDriverWorkspacePicker } from './DailyDriverWorkspacePicker'
 
 const LAST_PROJECT = 'orca.dailyDriver.project'
 const LAST_SESSION = 'orca.dailyDriver.session'
@@ -31,13 +24,15 @@ export default function DailyDriverPage(): React.JSX.Element {
   const [workspaceId, setWorkspaceId] = useState('')
   const [sessions, setSessions] = useState<LogicalWorkSession[]>([])
   const [selected, setSelected] = useState<DailyDriverSessionView | null>(null)
-  const [objective, setObjective] = useState('')
+  const [permissionMode, setPermissionMode] = useState<'READ_ONLY' | 'WORKSPACE_WRITE'>('READ_ONLY')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const activeWorktreeId = useAppStore((state) => state.activeWorktreeId)
+  const setActiveView = useAppStore((state) => state.setActiveView)
   const project = projects.find((row) => row.id === projectId)
   const workspace = project?.workspaces.find((row) => row.id === workspaceId)
   const item = useMemo<WorkItem | null>(
-    () => selected?.items.find((row) => row.branchId === 'main') ?? null,
+    () => selected?.items.toReversed().find((row) => row.parentWorkItemId !== null) ?? null,
     [selected]
   )
   const itemStatus = item?.status
@@ -78,6 +73,20 @@ export default function DailyDriverPage(): React.JSX.Element {
       active = false
     }
   }, [showError])
+
+  useEffect(() => {
+    if (!activeWorktreeId) {
+      return
+    }
+    const activeProject = projects.find((candidate) =>
+      candidate.workspaces.some((workspaceRow) => workspaceRow.id === activeWorktreeId)
+    )
+    const activeWorkspace = activeProject?.workspaces.find((row) => row.id === activeWorktreeId)
+    if (activeProject && activeWorkspace) {
+      setProjectId(activeProject.id)
+      setWorkspaceId(activeWorkspace.id)
+    }
+  }, [activeWorktreeId, projects])
 
   useEffect(() => {
     setWorkspaceId((current) =>
@@ -163,8 +172,8 @@ export default function DailyDriverPage(): React.JSX.Element {
     await refresh(id)
   }
 
-  const submit = async () => {
-    if (!project || !workspace || !objective.trim()) {
+  const submit = async (instruction: string) => {
+    if (!project || !workspace || !instruction.trim()) {
       return
     }
     setBusy(true)
@@ -174,19 +183,23 @@ export default function DailyDriverPage(): React.JSX.Element {
         method: 'create',
         projectId: project.id,
         workspaceId: workspace.id,
-        objective: objective.trim()
+        objective: instruction.trim(),
+        permissionMode
       })) as DailyDriverSessionView
       localStorage.setItem(LAST_SESSION, created.session.logicalWorkSessionId)
       setSelected(created)
       setSessions((current) => [created.session, ...current])
-      setObjective('')
-      const assigned = created.items.find((row) => row.branchId === 'main')!
+      const assigned = created.items.toReversed().find((row) => row.parentWorkItemId !== null)
+      if (!assigned) {
+        throw new Error('Logical session has no work item')
+      }
       const started = (await window.api.dailyDriver.call({
         method: 'start',
         sessionId: created.session.logicalWorkSessionId,
         expectedRevision: assigned.revision
       })) as DailyDriverSessionView
       setSelected(started)
+      setPermissionMode(started.session.permissionMode)
     } catch (cause) {
       showError(cause)
     } finally {
@@ -194,7 +207,33 @@ export default function DailyDriverPage(): React.JSX.Element {
     }
   }
 
-  const act = async (method: 'cancel' | 'verify' | 'start' | 'reconcile') => {
+  const sendConversationMessage = async (instruction: string) => {
+    if (!selected) {
+      await submit(instruction)
+      return
+    }
+    setBusy(true)
+    setError('')
+    try {
+      setSelected(
+        (await window.api.dailyDriver.call({
+          method: 'followup',
+          sessionId: selected.session.logicalWorkSessionId,
+          objective: instruction,
+          permissionMode: selected.session.permissionMode
+        })) as DailyDriverSessionView
+      )
+    } catch (cause) {
+      showError(cause)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const act = async (
+    method: 'cancel' | 'verify' | 'start' | 'reconcile',
+    testCommandItemIds?: string[]
+  ) => {
     if (!selected || !item) {
       return
     }
@@ -219,7 +258,9 @@ export default function DailyDriverPage(): React.JSX.Element {
                 method: 'verify' as const,
                 sessionId: selected.session.logicalWorkSessionId,
                 expectedRevision: item.revision,
-                reviewedResultHash
+                reviewedResultHash,
+                reviewedEvidenceHash: selected.reviewEvidence?.contentHash,
+                testCommandItemIds
               }
             : method === 'start'
               ? {
@@ -257,7 +298,10 @@ export default function DailyDriverPage(): React.JSX.Element {
         <div>
           <h1 className="text-xl font-semibold">{label('title', 'ORCA Work')}</h1>
           <p className="text-sm text-muted-foreground">
-            Codex · {label('readOnly', 'Read only — Codex cannot change files')}
+            {label(
+              'chatSubtitle',
+              'Chat-first workspace · Control Core keeps task state and evidence.'
+            )}
           </p>
         </div>
         {error && (
@@ -270,99 +314,41 @@ export default function DailyDriverPage(): React.JSX.Element {
           </div>
         )}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <Card className="min-w-0">
-            <CardHeader>
-              <CardTitle>{label('project', 'Project')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {projects.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {label('noProject', 'Add a local project in ORCA to begin.')}
-                </p>
+          <DailyDriverWorkspacePicker
+            projects={projects}
+            project={project}
+            workspace={workspace}
+            projectId={projectId}
+            workspaceId={workspaceId}
+            onProjectChange={setProjectId}
+            onWorkspaceChange={setWorkspaceId}
+          />
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>
+              {label(
+                'chatProjectHint',
+                'Choose a project and workspace. Send instructions in the conversation below.'
               )}
-              {projects.length > 0 && (
-                <>
-                  <Label htmlFor="orca-project">{label('project', 'Project')}</Label>
-                  <Select value={projectId} onValueChange={setProjectId}>
-                    <SelectTrigger id="orca-project">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map((row) => (
-                        <SelectItem key={row.id} value={row.id} data-project-id={row.id}>
-                          {row.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Label htmlFor="orca-workspace">{label('workspace', 'Workspace')}</Label>
-                  {project?.workspaces.length ? (
-                    <Select value={workspaceId} onValueChange={setWorkspaceId}>
-                      <SelectTrigger
-                        id="orca-workspace"
-                        className="w-full min-w-0 [&>span]:truncate"
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {project.workspaces.map((row) => (
-                          <SelectItem key={row.id} value={row.id} data-workspace-id={row.id}>
-                            {row.name} · {row.path.split(/[\\/]/).at(-1)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      {label('noWorkspace', 'No local workspace is available.')}
-                    </p>
-                  )}
-                  {workspace && (
-                    <div className="space-y-1 text-xs text-muted-foreground">
-                      <p className="break-all font-mono">{workspace.path}</p>
-                      <p>
-                        {label('head', 'HEAD')}: {workspace.head ?? '—'} ·{' '}
-                        {label('gitStatus', 'Git status')}:{' '}
-                        {workspace.gitStatus === null
-                          ? '—'
-                          : workspace.gitStatus
-                            ? label('dirty', 'Changes')
-                            : label('clean', 'Clean')}
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>{label('newTask', 'New task')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Label htmlFor="orca-objective">{label('task', 'Task')}</Label>
-              <Textarea
-                id="orca-objective"
-                autoFocus
-                value={objective}
-                onChange={(event) => setObjective(event.target.value)}
-                placeholder={label('taskPlaceholder', 'Describe what Codex should do…')}
-                maxLength={8000}
-                rows={5}
-              />
-              <p className="text-xs text-muted-foreground">
-                {label('permission', 'Permission')}: {label('readOnly', 'Read only')}
+            </p>
+            {selected && (
+              <p>
+                {label('runtime', 'Runtime')}: Codex · {label('permission', 'Permission')}:{' '}
+                {selected.session.permissionMode === 'WORKSPACE_WRITE'
+                  ? label('workspaceWrite', 'Workspace write')
+                  : label('readOnly', 'Read only')}
               </p>
-              <Button
-                onClick={() => void submit()}
-                disabled={!workspace || !objective.trim() || busy}
-              >
-                {busy ? <Loader2 className="animate-spin" /> : <Play />}
-                {label('start', 'Start')}
-              </Button>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         </div>
+        <DailyDriverConversation
+          view={selected}
+          item={item}
+          busy={busy || !workspace}
+          permissionMode={selected?.session.permissionMode ?? permissionMode}
+          onPermissionChange={selected ? () => {} : setPermissionMode}
+          onSend={(instruction) => void sendConversationMessage(instruction)}
+          onTechnical={() => setActiveView('terminal')}
+        />
         <Card>
           <CardHeader>
             <CardTitle>{label('sessions', 'Recent work')}</CardTitle>
@@ -386,17 +372,17 @@ export default function DailyDriverPage(): React.JSX.Element {
         </Card>
         {selected && item ? (
           <DailyDriverSessionPanel
-            key={selected.executionId ?? selected.session.logicalWorkSessionId}
+            key={`${selected.executionId ?? selected.session.logicalWorkSessionId}:${selected.reviewEvidence?.contentHash ?? ''}`}
             view={selected}
             item={item}
             busy={busy}
             refresh={() => void refresh(selected.session.logicalWorkSessionId).catch(showError)}
-            act={(method) => void act(method)}
+            act={(method, ids) => void act(method, ids)}
             signIn={() => void signIn()}
           />
         ) : (
           <p className="text-sm text-muted-foreground">
-            {label('emptySession', 'Select a project and enter a task.')}
+            {label('emptySession', 'Select a project and send an instruction.')}
           </p>
         )}
       </div>

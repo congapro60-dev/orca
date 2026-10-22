@@ -86,6 +86,14 @@ describe('Codex runtime resolved identity policy', () => {
     expect(runProcess).not.toHaveBeenCalled()
   })
 
+  it('rejects a workspace containing global configuration even with a separate runtime profile', async () => {
+    const input = fixture()
+    await expect(
+      prepareCodexRuntime({ ...input, worktree: join(homedir(), '.codex') })
+    ).rejects.toThrow(/global configuration/)
+    expect(runProcess).not.toHaveBeenCalled()
+  })
+
   it('rejects an invalid version response', async () => {
     const input = fixture()
     vi.mocked(runProcess).mockResolvedValue({
@@ -108,5 +116,20 @@ describe('Codex runtime resolved identity policy', () => {
     expect(env.OPENAI_API_KEY).toBeUndefined()
     expect(env.ORCA_RUNTIME_AUTH_TOKEN).toBeUndefined()
     expect(env.ARBITRARY_PRIVATE_VALUE).toBeUndefined()
+  })
+
+  it('does not expose the owner profile through standard path variables', () => {
+    const runtimeHome = 'C:\\orca-managed\\codex-home'
+    vi.stubEnv('USERPROFILE', 'C:\\Users\\owner')
+    vi.stubEnv('HOME', 'C:\\Users\\owner')
+    vi.stubEnv('APPDATA', 'C:\\Users\\owner\\AppData\\Roaming')
+    vi.stubEnv('LOCALAPPDATA', 'C:\\Users\\owner\\AppData\\Local')
+    const env = codexRuntimeEnvironment(runtimeHome)
+    expect(env.USERPROFILE).toBe(runtimeHome)
+    expect(env.HOME).toBe(runtimeHome)
+    expect(env.APPDATA).toBe('C:\\orca-managed\\codex-home\\AppData\\Roaming')
+    expect(env.LOCALAPPDATA).toBe('C:\\orca-managed\\codex-home\\AppData\\Local')
+    expect(env.HOMEDRIVE).toBe('C:')
+    expect(env.HOMEPATH).toBe('\\orca-managed\\codex-home')
   })
 })

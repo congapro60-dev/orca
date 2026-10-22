@@ -1,4 +1,5 @@
 import type { LogicalWorkSession, WorkEvent, WorkItem } from './control-core-contract'
+import type { EvidenceRecord } from './control-evidence-contract'
 
 export type DailyDriverWorkspace = {
   id: string
@@ -21,6 +22,8 @@ export type DailyDriverSessionView = {
   items: WorkItem[]
   events: WorkEvent[]
   result: string | null
+  /** Runtime result per work item, so a conversation can render every answered turn. */
+  itemResults: Record<string, string>
   executionId: string | null
   runtimeStatus: string | null
   runtimeError: string | null
@@ -33,6 +36,7 @@ export type DailyDriverSessionView = {
     approval: string
     resultStored: boolean
   } | null
+  reviewEvidence?: Pick<EvidenceRecord, 'contentHash' | 'commands' | 'observed'> | null
   recovery?: {
     status: 'RUNNING' | 'INTERRUPTED' | 'NEEDS_RECONCILE' | 'STALE_CHECKPOINT' | 'ELIGIBLE'
     processVerdict: 'live' | 'unverifiable' | 'exited'
@@ -44,12 +48,31 @@ export type DailyDriverRequest =
   | { method: 'projects' }
   | { method: 'sessions'; projectId: string }
   | { method: 'workspaceInfo'; projectId: string; workspaceId: string }
-  | { method: 'create'; projectId: string; workspaceId: string; objective: string }
+  | {
+      method: 'create'
+      projectId: string
+      workspaceId: string
+      objective: string
+      permissionMode?: 'READ_ONLY' | 'WORKSPACE_WRITE'
+    }
   | { method: 'open'; sessionId: string }
+  | {
+      method: 'followup'
+      sessionId: string
+      objective: string
+      permissionMode?: 'READ_ONLY' | 'WORKSPACE_WRITE'
+    }
   | { method: 'start'; sessionId: string; expectedRevision: number }
   | { method: 'cancel'; sessionId: string }
   | { method: 'reconcile'; sessionId: string }
-  | { method: 'verify'; sessionId: string; expectedRevision: number; reviewedResultHash: string }
+  | {
+      method: 'verify'
+      sessionId: string
+      expectedRevision: number
+      reviewedResultHash: string
+      reviewedEvidenceHash?: string
+      testCommandItemIds?: string[]
+    }
 
 export type DailyDriverResponse =
   | DailyDriverProject[]

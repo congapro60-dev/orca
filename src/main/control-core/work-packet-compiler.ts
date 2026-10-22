@@ -26,8 +26,14 @@ export function compileWorkPacket(
   if (item.logicalWorkSessionId !== session.logicalWorkSessionId) {
     throw new Error('Packet session mismatch')
   }
-  if (profile.runtime !== 'codex' || profile.permissionMode !== 'READ_ONLY') {
+  if (
+    profile.runtime !== 'codex' ||
+    !['READ_ONLY', 'WORKSPACE_WRITE'].includes(profile.permissionMode)
+  ) {
     throw new Error('Unsupported Alpha runtime profile')
+  }
+  if (profile.permissionMode !== session.permissionMode) {
+    throw new Error('Runtime permission differs from canonical session permission')
   }
   let remaining = 8000
   const selected: WorkContextCapsule[] = []

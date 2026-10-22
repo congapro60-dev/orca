@@ -74,6 +74,12 @@ describe('WorkPacket bounds and context isolation', () => {
       } as unknown as CoreRuntimeProfile)
     ).toThrow(/Unsupported/)
     expect(() =>
+      compileWorkPacket(session, item, [], {
+        ...profile,
+        permissionMode: 'WORKSPACE_WRITE'
+      })
+    ).toThrow(/canonical session permission/)
+    expect(() =>
       compileWorkPacket(session, { ...item, objective: 'x'.repeat(32000) }, [], profile)
     ).toThrow(/budget/)
   })

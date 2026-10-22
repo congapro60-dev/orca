@@ -6,6 +6,10 @@ CREATE TABLE IF NOT EXISTS control_work_sessions (
   root_id TEXT NOT NULL, run_id TEXT NOT NULL UNIQUE REFERENCES runs(id),
   created_at TEXT NOT NULL, updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS control_work_session_profiles (
+  session_id TEXT PRIMARY KEY REFERENCES control_work_sessions(id),
+  permission_mode TEXT NOT NULL CHECK(permission_mode IN ('READ_ONLY','WORKSPACE_WRITE'))
+);
 CREATE TABLE IF NOT EXISTS control_work_items (
   id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES control_work_sessions(id),
   parent_id TEXT REFERENCES control_work_items(id), branch_id TEXT NOT NULL, objective TEXT NOT NULL,

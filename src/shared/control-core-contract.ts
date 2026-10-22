@@ -12,6 +12,7 @@ export type LogicalWorkSession = {
   projectId: string
   worktree: string
   objective: string
+  permissionMode: 'READ_ONLY' | 'WORKSPACE_WRITE'
   status: 'ACTIVE' | 'COMPLETED' | 'BLOCKED' | 'CANCELLED'
   rootWorkItemId: string
   runId: string
@@ -87,6 +88,6 @@ export type PeerMessage = {
 export type WorkContextCapsule = { id: string; content: string }
 export type CoreRuntimeProfile = {
   runtime: 'codex'
-  permissionMode: 'READ_ONLY'
+  permissionMode: 'READ_ONLY' | 'WORKSPACE_WRITE'
   requestedModel?: string
 }

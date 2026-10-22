@@ -1,10 +1,13 @@
+// @vitest-environment happy-dom
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { WorkItem } from '../../../../shared/control-core-contract'
 import type { DailyDriverSessionView } from '../../../../shared/daily-driver-contract'
 import { DailyDriverSessionPanel } from './DailyDriverSessionPanel'
 
 vi.mock('@/i18n/i18n', () => ({ translate: (_key: string, fallback: string) => fallback }))
+afterEach(cleanup)
 
 const item: WorkItem = {
   workItemId: 'item',
@@ -38,6 +41,7 @@ describe('Daily Driver blocked recovery action', () => {
           worktree: '/workspace',
           objective: 'Recover',
           status: 'ACTIVE',
+          permissionMode: 'READ_ONLY',
           rootWorkItemId: 'root',
           runId: 'run',
           createdAt: item.createdAt,
@@ -46,6 +50,7 @@ describe('Daily Driver blocked recovery action', () => {
         items: [item],
         events: [],
         result: null,
+        itemResults: {},
         executionId: item.executionId,
         runtimeStatus: 'OUTCOME_UNKNOWN',
         runtimeError: null,
@@ -78,5 +83,92 @@ describe('Daily Driver blocked recovery action', () => {
       }
       expect(act).not.toHaveBeenCalled()
     }
+  )
+})
+
+it('requires explicit successful-command selection, resets acceptance on selection change', () => {
+  const ready = { ...item, status: 'READY_FOR_REVIEW' as const }
+  const view: DailyDriverSessionView = {
+    session: {
+      logicalWorkSessionId: 'session',
+      projectId: 'project',
+      worktree: '/workspace',
+      objective: 'Fix',
+      status: 'ACTIVE',
+      permissionMode: 'WORKSPACE_WRITE',
+      rootWorkItemId: 'root',
+      runId: 'run',
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    },
+    items: [ready],
+    events: [],
+    result: 'Result',
+    itemResults: { [item.workItemId]: 'Result' },
+    executionId: item.executionId,
+    runtimeStatus: 'COMPLETED',
+    runtimeError: null,
+    elapsedMs: null,
+    evidence: {
+      executionId: item.executionId!,
+      taskId: 'task',
+      dispatchId: 'dispatch',
+      sandbox: 'WORKSPACE_WRITE',
+      approval: 'never',
+      resultStored: true
+    },
+    reviewEvidence: {
+      contentHash: 'a'.repeat(64),
+      observed: null,
+      commands: [
+        { itemId: 'test', command: 'node --test', exitCode: 0, status: 'completed' },
+        { itemId: 'bad', command: 'node --test bad.js', exitCode: 1, status: 'completed' }
+      ]
+    }
+  }
+  const act = vi.fn()
+  const { rerender } = render(
+    <DailyDriverSessionPanel
+      key="first"
+      view={view}
+      item={ready}
+      busy={false}
+      refresh={() => {}}
+      act={act}
+      signIn={() => {}}
+    />
+  )
+  const verify = screen.getByRole('button', { name: 'Verify result' }) as HTMLButtonElement
+  const accepted = screen.getByRole('checkbox', { name: /I reviewed/ })
+  const test = screen.getByRole('checkbox', { name: 'node --test · completed · exit 0' })
+  expect((screen.getByRole('checkbox', { name: /bad.js/ }) as HTMLButtonElement).disabled).toBe(
+    true
+  )
+  expect(verify.disabled).toBe(true)
+  fireEvent.click(accepted)
+  expect(verify.disabled).toBe(true)
+  fireEvent.click(test)
+  expect(accepted.getAttribute('data-state')).toBe('unchecked')
+  expect(verify.disabled).toBe(true)
+  fireEvent.click(accepted)
+  expect(verify.disabled).toBe(false)
+  fireEvent.click(verify)
+  expect(act).toHaveBeenCalledWith('verify', ['test'])
+  rerender(
+    <DailyDriverSessionPanel
+      key="changed-evidence"
+      view={view}
+      item={ready}
+      busy={false}
+      refresh={() => {}}
+      act={act}
+      signIn={() => {}}
+    />
+  )
+  expect(
+    (screen.getByRole('button', { name: 'Verify result' }) as HTMLButtonElement).disabled
+  ).toBe(true)
+  expect(screen.getByRole('checkbox', { name: /I reviewed/ }).getAttribute('data-state')).toBe(
+    'unchecked'
   )
 })

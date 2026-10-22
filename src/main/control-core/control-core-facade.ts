@@ -52,6 +52,7 @@ export class ControlCoreFacade {
     objective: string
     doneWhen?: string[]
     constraints?: string[]
+    permissionMode?: 'READ_ONLY' | 'WORKSPACE_WRITE'
   }) {
     if (!isAbsolute(input.worktree)) {
       throw new Error('Project workspace must be absolute')
@@ -62,7 +63,8 @@ export class ControlCoreFacade {
     }
     return this.store.create(input.projectId, worktree, input.objective, {
       doneWhen: input.doneWhen,
-      constraints: input.constraints
+      constraints: input.constraints,
+      permissionMode: input.permissionMode
     })
   }
 
@@ -125,13 +127,33 @@ export class ControlCoreFacade {
   addBranch(sessionId: string, input: NewWorkItem) {
     return this.store.addItem(sessionId, this.store.session(sessionId).rootWorkItemId, input)
   }
+  addFollowup(sessionId: string, input: NewWorkItem) {
+    return this.store.transaction(() => {
+      const session = this.store.session(sessionId)
+      if (session.status === 'CANCELLED' || session.status === 'BLOCKED') {
+        throw new Error('Logical session cannot accept a follow-up')
+      }
+      if (session.status === 'COMPLETED') {
+        this.store.native.db
+          .prepare("UPDATE control_work_sessions SET status='ACTIVE',updated_at=? WHERE id=?")
+          .run(new Date().toISOString(), sessionId)
+      }
+      return this.addBranch(sessionId, input)
+    })
+  }
   start(
     id: string,
     expectedRevision: number,
     context: readonly WorkContextCapsule[] = [],
-    profile: CoreRuntimeProfile = { runtime: 'codex', permissionMode: 'READ_ONLY' }
+    profile?: CoreRuntimeProfile
   ) {
-    return this.workRuntime.start(id, expectedRevision, context, profile)
+    const session = this.store.session(this.store.item(id).logicalWorkSessionId)
+    return this.workRuntime.start(
+      id,
+      expectedRevision,
+      context,
+      profile ?? { runtime: 'codex', permissionMode: session.permissionMode }
+    )
   }
   refresh(id: string) {
     return this.workRuntime.refresh(id)

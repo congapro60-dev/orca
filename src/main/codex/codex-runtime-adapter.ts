@@ -1,5 +1,4 @@
 import { randomUUID } from 'node:crypto'
-import { relative } from 'node:path'
 import type {
   CodexRuntimeRequest,
   CodexRuntimeReceipt,
@@ -11,7 +10,9 @@ import {
   CodexRuntimeRequestSchema,
   prepareCodexRuntime,
   codexRuntimeEnvironment,
-  ThreadReceiptSchema,
+  checkedCodexThread,
+  codexSandboxPolicy,
+  codexSandboxConfig,
   TurnReceiptSchema
 } from './codex-runtime-policy'
 import { codexRuntimePreflight, verifyCodexRuntimeTools } from './codex-runtime-preflight'
@@ -186,9 +187,7 @@ export class CodexRuntimeAdapterV0 {
       method: method.slice(0, 128),
       ...(itemType ? { itemType: itemType.slice(0, 80) } : {})
     })
-    if (execution.events.length > MAX_EVENTS) {
-      execution.events.shift()
-    }
+    execution.events.splice(0, Math.max(0, execution.events.length - MAX_EVENTS))
     execution.observe?.(
       structuredClone(execution.result),
       structuredClone(execution.events.at(-1)!)
@@ -234,24 +233,27 @@ export class CodexRuntimeAdapterV0 {
         async (rpc) => {
           execution.rpc = rpc
           const config = await codexRuntimePreflight(rpc, receipt.worktree, mcpOverrides.names)
-          const thread = ThreadReceiptSchema.parse(
+          const thread = checkedCodexThread(
             await rpc.request('thread/start', {
               cwd: receipt.worktree,
-              sandbox: 'read-only',
+              sandbox:
+                request.permissionMode === 'WORKSPACE_WRITE' ? 'workspace-write' : 'read-only',
               approvalPolicy: 'never',
               modelProvider: 'openai',
               ephemeral: true,
               allowProviderModelFallback: false,
-              config,
+              config: {
+                ...config,
+                ...codexSandboxConfig(request.permissionMode, receipt.worktree)
+              },
               ...(request.requestedModel ? { model: request.requestedModel } : {})
-            })
+            }),
+            request.permissionMode,
+            receipt.worktree
           )
-          if (relative(receipt.worktree, thread.cwd) !== '') {
-            throw new Error('Codex returned a different workspace')
-          }
           receipt.threadId = thread.thread.id
           receipt.resolvedModel = thread.model ?? null
-          receipt.effectiveSandbox = 'READ_ONLY'
+          receipt.effectiveSandbox = request.permissionMode
           this.append(execution, 'PROGRESS', 'thread/start')
           await verifyCodexRuntimeTools(rpc, receipt.threadId, mcpOverrides.names)
           await beforeDispatch?.()
@@ -264,7 +266,7 @@ export class CodexRuntimeAdapterV0 {
               input: [{ type: 'text', text: request.prompt }],
               cwd: receipt.worktree,
               approvalPolicy: 'never',
-              sandboxPolicy: { type: 'readOnly', networkAccess: false }
+              sandboxPolicy: codexSandboxPolicy(request.permissionMode, receipt.worktree)
             })
           )
           receipt.turnId = started.turn.id

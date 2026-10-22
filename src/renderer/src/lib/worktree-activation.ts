@@ -110,7 +110,7 @@ export function activateAndRevealFolderWorkspace(
   }
 
   if (state.activeView !== 'terminal') {
-    state.setActiveView('terminal')
+    state.setActiveView(opts?.startup || opts?.providesInitialSurface ? 'terminal' : 'orca')
   }
 
   state.setActiveFolderWorkspace(folderWorkspaceId, opts?.executionHostId)
@@ -178,9 +178,9 @@ export function activateAndRevealWorktree(
     state.setActiveRepo(wt.repoId)
   }
 
-  // 2. Switch any non-terminal view back to terminal
+  // 2. Plain workspace opens land in the conversational surface.
   if (state.activeView !== 'terminal') {
-    state.setActiveView('terminal')
+    state.setActiveView(hasActivationWork || opts?.providesInitialSurface ? 'terminal' : 'orca')
   }
 
   // 3. Core activation: setActiveWorktree also restores per-worktree state, clears unread, bumps dead PTY generations, refreshes GitHub

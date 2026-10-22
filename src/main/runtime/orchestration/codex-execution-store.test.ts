@@ -21,7 +21,7 @@ afterEach(() => {
   }
 })
 
-function fixture(file = ':memory:') {
+function fixture(file = ':memory:', permissionMode: 'READ_ONLY' | 'WORKSPACE_WRITE' = 'READ_ONLY') {
   const db = new OrchestrationDb(file)
   databases.push(db)
   const run = db.createRun({
@@ -32,7 +32,7 @@ function fixture(file = ':memory:') {
   const task = db.createTask({ spec: 'Inspect repository', runId: run.id })
   const store = new CodexExecutionStore(db, 'epoch-a')
   const executionId = randomUUID()
-  const row = store.accept(task.id, executionId, '/test/repo')
+  const row = store.accept(task.id, executionId, '/test/repo', undefined, permissionMode)
   const receipt: CodexRuntimeReceipt = {
     executionId,
     worktree: '/test/repo',
@@ -55,7 +55,7 @@ function fixture(file = ':memory:') {
     Object.assign(receipt, {
       threadId: 'thread-a',
       turnId: 'turn-a',
-      effectiveSandbox: 'READ_ONLY'
+      effectiveSandbox: permissionMode
     })
     store.save(snapshot)
   }
@@ -63,6 +63,33 @@ function fixture(file = ':memory:') {
 }
 
 describe('Native Orca Codex execution linkage', () => {
+  it.each(['READ_ONLY', 'WORKSPACE_WRITE'] as const)(
+    'binds %s to native dispatch and refuses mismatched receipts',
+    (permissionMode) => {
+      const { db, row, store, snapshot, running } = fixture(':memory:', permissionMode)
+      const dispatch = db.db
+        .prepare('SELECT start_options FROM worker_dispatches WHERE dispatch_id=?')
+        .get(row.dispatchId) as { start_options: string }
+      expect(JSON.parse(dispatch.start_options).permissionMode).toBe(permissionMode)
+      const other = permissionMode === 'READ_ONLY' ? 'WORKSPACE_WRITE' : 'READ_ONLY'
+      expect(() =>
+        store.save({ ...snapshot, receipt: { ...snapshot.receipt, effectiveSandbox: other } })
+      ).toThrow(/accepted dispatch permission/)
+      expect(store.require(row.executionId).receipt).toBeNull()
+      running()
+      expect(() =>
+        store.save({
+          ...snapshot,
+          receipt: { ...snapshot.receipt, effectiveSandbox: 'UNKNOWN_UNVERIFIED' }
+        })
+      ).toThrow(/accepted dispatch permission/)
+      store.save({ ...snapshot, status: 'COMPLETED', text: 'Evidence' })
+      expect(store.require(row.executionId)).toMatchObject({
+        status: 'COMPLETED',
+        receipt: { effectiveSandbox: permissionMode }
+      })
+    }
+  )
   it('persists bounded redacted commands across reopen and rejects terminal replacement', () => {
     const dir = mkdtempSync(join(tmpdir(), 'orca-command-db-'))
     dirs.push(dir)

@@ -1,11 +1,28 @@
 {
-  "menu": { "file": "Tệp", "edit": "Chỉnh sửa", "view": "Xem", "help": "Trợ giúp" },
+  "menu": {
+    "file": "Tệp",
+    "edit": "Chỉnh sửa",
+    "view": "Xem",
+    "help": "Trợ giúp"
+  },
   "settings": {
     "appearance": {
-      "language": { "vietnamese": "Tiếng Việt", "english": "Tiếng Anh", "system": "Theo hệ thống" }
+      "language": {
+        "vietnamese": "Tiếng Việt",
+        "english": "Tiếng Anh",
+        "system": "Theo hệ thống"
+      }
     }
   },
-  "auto": { "components": { "sidebar": { "SidebarNav": { "dailyDriver": "Công việc ORCA" } } } },
+  "auto": {
+    "components": {
+      "sidebar": {
+        "SidebarNav": {
+          "dailyDriver": "Công việc ORCA"
+        }
+      }
+    }
+  },
   "dailyDriver": {
     "title": "Công việc ORCA",
     "project": "Dự án",
@@ -14,6 +31,18 @@
     "taskPlaceholder": "Mô tả việc bạn muốn Codex thực hiện trong dự án này…",
     "permission": "Quyền thực hiện",
     "readOnly": "Chỉ đọc — Codex không được sửa tệp",
+    "workspaceWrite": "Cho phép sửa tệp trong thư mục làm việc",
+    "permissionHelp": "Chọn quyền thực hiện cho từng công việc mới.",
+    "conversation": "Cuộc trò chuyện",
+    "newConversation": "Cuộc trò chuyện mới",
+    "chatSubtitle": "Không gian chat trước · Control Core giữ trạng thái và bằng chứng công việc.",
+    "chatProjectHint": "Chọn dự án và thư mục làm việc. Gửi yêu cầu trong cuộc trò chuyện bên dưới.",
+    "chatEmpty": "Nói cho ORCA biết bạn muốn làm gì. ORCA sẽ giữ chung công việc, hoạt động runtime và bằng chứng.",
+    "chatPlaceholder": "Mô tả việc bạn muốn ORCA thực hiện…",
+    "runtimeWorking": "ORCA đang nhận tiến trình từ runtime…",
+    "technicalView": "Chế độ kỹ thuật",
+    "send": "Gửi",
+    "you": "Bạn",
     "start": "Bắt đầu",
     "creating": "Đang tạo phiên…",
     "starting": "Đang gửi việc…",
@@ -23,6 +52,9 @@
     "verify": "Xác minh kết quả",
     "reviewGuidance": "Đối chiếu kết quả với yêu cầu của bạn trước khi chấp nhận. Codex trả lời xong chưa chứng minh công việc đã đúng.",
     "reviewConfirm": "Tôi đã xem và chấp nhận kết quả này đáp ứng yêu cầu.",
+    "validationCommands": "Chọn lệnh đã xem để xác nhận là kiểm thử",
+    "validationHelp": "Đây là lệnh runtime đã chạy, không phải kiểm thử độc lập của ORCA. Chỉ chọn kiểm thử xác nhận thay đổi cuối cùng.",
+    "noValidationCommands": "Chưa có lệnh kiểm thử được ghi nhận. Chưa thể xác minh hoàn thành.",
     "refresh": "Làm mới",
     "sessions": "Công việc gần đây",
     "newTask": "Công việc mới",
@@ -61,6 +93,7 @@
       "FAILED": "Thất bại",
       "BLOCKED": "Cần đối chiếu",
       "CANCELLED": "Đã hủy"
-    }
+    },
+    "session": "Phiên"
   }
 }

@@ -51,7 +51,7 @@ export class ControlCoreRuntime {
     context: readonly WorkContextCapsule[],
     profile: CoreRuntimeProfile
   ): Promise<WorkItem> {
-    const source = startSource(this.store, id, expectedRevision)
+    const source = startSource(this.store, id, expectedRevision, profile.permissionMode)
     const admittedCheckpoint = source.item.executionId
       ? await prepareResume(this.store, source)
       : undefined

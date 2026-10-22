@@ -119,7 +119,8 @@
         "chinese": "中文（简体）",
         "korean": "한국어",
         "japanese": "日本語",
-        "spanish": "Español"
+        "spanish": "Español",
+        "vietnamese": "Tiếng Việt"
       },
       "statusBar": {
         "claudeToggleDescription": "Show Claude token and cost usage for the active workspace.",
@@ -5211,7 +5212,8 @@
           "fee535205b": "Tasks",
           "d599269755": "Hide from sidebar",
           "artifacts": "Artifacts",
-          "skills": "Skills"
+          "skills": "Skills",
+          "dailyDriver": "ORCA Work"
         },
         "SidebarRepositoryFilterSection": {
           "d3a9c4cea1": "Clear",
@@ -17043,5 +17045,78 @@
   },
   "quickOpen": {
     "moreMatchesAvailable": "More matches may be available. Refine your search to narrow the results."
+  },
+  "dailyDriver": {
+    "title": "ORCA Work",
+    "project": "Project",
+    "workspace": "Workspace",
+    "task": "Task",
+    "taskPlaceholder": "Describe what Codex should do in this project…",
+    "permission": "Permission",
+    "readOnly": "Read only",
+    "workspaceWrite": "Workspace write",
+    "permissionHelp": "Choose permission for each new task.",
+    "conversation": "Conversation",
+    "session": "Session",
+    "newConversation": "New conversation",
+    "chatSubtitle": "Chat-first workspace · Control Core keeps task state and evidence.",
+    "chatProjectHint": "Choose a project and workspace. Send instructions in the conversation below.",
+    "chatEmpty": "Tell ORCA what you want done. ORCA will keep the task, runtime activity and evidence together.",
+    "chatPlaceholder": "Describe what you want ORCA to do.",
+    "runtimeWorking": "ORCA is receiving runtime progress.",
+    "technicalView": "Technical view",
+    "send": "Send",
+    "you": "You",
+    "start": "Start",
+    "creating": "Creating session…",
+    "starting": "Sending task…",
+    "cancel": "Cancel task",
+    "retry": "Retry task",
+    "signIn": "Sign in to Codex",
+    "verify": "Verify result",
+    "reviewGuidance": "Compare the result with your task before accepting it. Runtime completion alone does not prove the task is correct.",
+    "reviewConfirm": "I reviewed this result and accept it as meeting my task.",
+    "validationCommands": "Select commands you reviewed as tests",
+    "validationHelp": "Captured runtime commands, not an independent ORCA test run. Select only tests that validate the final changes.",
+    "noValidationCommands": "No captured validation commands. Verification is blocked.",
+    "refresh": "Refresh",
+    "sessions": "Recent work",
+    "newTask": "New task",
+    "result": "Result",
+    "evidence": "Basic evidence",
+    "runtime": "Runtime",
+    "executionId": "Execution ID",
+    "elapsed": "Elapsed",
+    "head": "HEAD",
+    "gitStatus": "Git status",
+    "clean": "Clean",
+    "dirty": "Changes",
+    "noProject": "Add a local project in ORCA to begin.",
+    "noWorkspace": "No local workspace is available.",
+    "emptySession": "Select a project and send an instruction.",
+    "readyReview": "Codex returned a result. Review evidence before verifying.",
+    "verified": "Result verified with runtime evidence and ORCA records.",
+    "blocked": "Outcome uncertain. Reconcile before retry.",
+    "recovery": "Recovery",
+    "reconcile": "Check recovery state",
+    "recoveryGuidance": "This check does not start work. Do not retry while the previous execution is unverified.",
+    "recoveryState": {
+      "RUNNING": "The previous execution is still running",
+      "INTERRUPTED": "The task was interrupted",
+      "NEEDS_RECONCILE": "Not enough evidence to retry",
+      "STALE_CHECKPOINT": "The workspace changed since the checkpoint",
+      "ELIGIBLE": "Eligible to continue"
+    },
+    "error": "Action failed. Review the technical message and retry.",
+    "state": {
+      "QUEUED": "Queued",
+      "WAITING": "Preparing",
+      "RUNNING": "Running",
+      "READY_FOR_REVIEW": "Ready for review",
+      "VERIFIED": "Verified",
+      "FAILED": "Failed",
+      "BLOCKED": "Needs reconcile",
+      "CANCELLED": "Cancelled"
+    }
   }
 }

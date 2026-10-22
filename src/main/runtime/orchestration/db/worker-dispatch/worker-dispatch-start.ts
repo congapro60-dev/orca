@@ -121,6 +121,19 @@ export function createStartingWorkerDispatch(
       if (!params.runtimeEpoch || params.federation) {
         throw new Error('Programmatic Codex requires a local runtime epoch')
       }
+      const sessionProfile = this.db
+        .prepare(`SELECT COALESCE(p.permission_mode,'READ_ONLY') AS permission
+        FROM control_work_attempts a JOIN control_work_items i ON i.id=a.item_id
+        LEFT JOIN control_work_session_profiles p ON p.session_id=i.session_id
+        WHERE a.task_id=?`)
+        .get(task.id) as { permission: string } | undefined
+      if (
+        sessionProfile &&
+        sessionProfile.permission !==
+          (params.startOptions as { permissionMode?: unknown })?.permissionMode
+      ) {
+        throw new Error('Native dispatch permission differs from canonical session permission')
+      }
       assertCodexRecoveryRelease(this, params.codexExecution.worktree)
       this.db
         .prepare(`INSERT INTO codex_runtime_executions

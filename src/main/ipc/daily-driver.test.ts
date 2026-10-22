@@ -63,16 +63,66 @@ describe('Daily Driver desktop authority', () => {
     ipc.confirmation.mockResolvedValueOnce({ response: 1 })
     const request = {
       method: 'verify',
-      sessionId: 'fixture-session',
+      sessionId: '7f41f1db-e9a4-4c4d-8977-03cbdfbe3210',
       expectedRevision: 1,
       reviewedResultHash: 'a'.repeat(64)
     }
     await expect(handler({ sender, senderFrame: sender.mainFrame }, request)).resolves.toEqual(view)
     expect(ipc.call).toHaveBeenCalledTimes(1)
-    expect(ipc.call).toHaveBeenCalledWith({ method: 'open', sessionId: 'fixture-session' })
+    expect(ipc.call).toHaveBeenCalledWith({ method: 'open', sessionId: request.sessionId })
     ipc.call.mockClear()
     ipc.confirmation.mockResolvedValueOnce({ response: 0 })
     await handler({ sender, senderFrame: sender.mainFrame }, request)
+    expect(ipc.call).toHaveBeenCalledWith(request)
+  })
+
+  it('binds native write confirmation to selected immutable command evidence', async () => {
+    registerDailyDriverHandlers({} as never)
+    const handler = ipc.handlers.get('dailyDriver:call')!
+    const sender = { id: 32, mainFrame: {} }
+    const event = { sender, senderFrame: sender.mainFrame }
+    setTrustedDailyDriverRendererWebContentsId(32)
+    const view = {
+      session: { objective: 'Fix code', permissionMode: 'WORKSPACE_WRITE' },
+      items: [{ branchId: 'main', status: 'READY_FOR_REVIEW' }],
+      result: 'Actual result',
+      reviewEvidence: {
+        contentHash: 'b'.repeat(64),
+        commands: [{ itemId: 'check', command: 'node --test', status: 'completed', exitCode: 0 }]
+      }
+    }
+    const request = {
+      method: 'verify',
+      sessionId: '7f41f1db-e9a4-4c4d-8977-03cbdfbe3210',
+      expectedRevision: 1,
+      reviewedResultHash: 'a'.repeat(64),
+      reviewedEvidenceHash: 'b'.repeat(64),
+      testCommandItemIds: ['check']
+    }
+    ipc.call.mockClear().mockResolvedValue(view)
+    ipc.confirmation.mockClear().mockResolvedValue({ response: 1 })
+    for (const fault of [
+      { reviewedEvidenceHash: 'c'.repeat(64) },
+      { testCommandItemIds: [] },
+      { testCommandItemIds: ['unknown'] },
+      { testCommandItemIds: ['check', 'check'] }
+    ]) {
+      await expect(handler(event, { ...request, ...fault })).rejects.toThrow()
+    }
+    expect(ipc.confirmation).not.toHaveBeenCalled()
+    ipc.call.mockClear()
+    await handler(event, request)
+    expect(ipc.confirmation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        defaultId: 1,
+        cancelId: 1,
+        detail: expect.stringContaining('node --test')
+      })
+    )
+    expect(ipc.call).not.toHaveBeenCalledWith(request)
+    ipc.confirmation.mockResolvedValueOnce({ response: 0 })
+    await handler(event, request)
     expect(ipc.call).toHaveBeenCalledWith(request)
   })
 })

@@ -12,13 +12,19 @@ export type CoreVerificationPort = {
     session: LogicalWorkSession
     item: WorkItem
     execution: CodexExecutionRecord
-  }) => Promise<{ passed: boolean; evidenceRefs: string[]; reason?: string }>
+  }) => Promise<{
+    passed: boolean
+    evidenceRefs: string[]
+    reason?: string
+    testCommandItemIds?: string[]
+  }>
 }
 const Verdict = z
   .object({
     passed: z.boolean(),
     evidenceRefs: z.array(z.string().min(1).max(1000)).max(64),
-    reason: z.string().max(2000).optional()
+    reason: z.string().max(2000).optional(),
+    testCommandItemIds: z.array(z.string().min(1).max(256)).max(64).optional()
   })
   .strict()
 
@@ -71,7 +77,8 @@ export class ControlCoreVerification {
         this.store,
         current,
         verdict.passed,
-        verdict.evidenceRefs
+        verdict.evidenceRefs,
+        verdict.testCommandItemIds
       )
       if (!verdict.passed) {
         const rejected = this.store.save({ ...current, status: 'FAILED' })

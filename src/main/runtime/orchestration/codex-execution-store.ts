@@ -13,6 +13,7 @@ import {
   writeProcessObservations
 } from './codex-process-observation-store'
 import { markCodexExecutionUnknown } from './codex-execution-unknown'
+import { assertCodexExecutionPermission } from './codex-execution-permission'
 import type { OrchestrationDb } from './db'
 import {
   failWorkerStartInTransaction,
@@ -67,8 +68,12 @@ export class CodexExecutionStore {
       requestId: string
       method: string
       payloadHash: string
-    }
+    },
+    permissionMode: 'READ_ONLY' | 'WORKSPACE_WRITE' = 'READ_ONLY'
   ): CodexExecutionRecord {
+    if (!['READ_ONLY', 'WORKSPACE_WRITE'].includes(permissionMode)) {
+      throw new Error('Unsupported Codex dispatch permission')
+    }
     this.native.createStartingWorkerDispatch({
       taskId,
       runtimeEpoch: this.runtimeEpoch,
@@ -76,7 +81,7 @@ export class CodexExecutionStore {
       maxDepth: 1,
       startOptions: {
         runtime: 'codex-app-server',
-        permissionMode: 'READ_ONLY',
+        permissionMode,
         executionId,
         worktree
       },
@@ -132,23 +137,12 @@ export class CodexExecutionStore {
     this.native.db.exec('BEGIN IMMEDIATE')
     try {
       const record = this.require(snapshot.receipt.executionId)
-      if (
-        record.runtimeEpoch !== this.runtimeEpoch ||
-        record.worktree !== snapshot.receipt.worktree
-      ) {
-        throw new Error('Codex execution owner/workspace mismatch')
-      }
-      if (
-        record.receipt &&
-        (record.receipt.resolvedExecutablePath !== snapshot.receipt.resolvedExecutablePath ||
-          record.receipt.resolvedExecutableVersion !== snapshot.receipt.resolvedExecutableVersion ||
-          record.receipt.codexHome !== snapshot.receipt.codexHome ||
-          record.receipt.requestedRuntime !== snapshot.receipt.requestedRuntime ||
-          record.receipt.approvalPolicy !== snapshot.receipt.approvalPolicy ||
-          record.receipt.requestedModel !== snapshot.receipt.requestedModel)
-      ) {
-        throw new Error('Codex executable, profile or request identity changed mid-execution')
-      }
+      const permissionMode = assertCodexExecutionPermission(
+        this.native,
+        record,
+        snapshot.receipt,
+        this.runtimeEpoch
+      )
       if (!ACTIVE.has(record.status)) {
         if (
           record.status === snapshot.status &&
@@ -183,7 +177,7 @@ export class CodexExecutionStore {
         if (
           !snapshot.receipt.threadId ||
           !snapshot.receipt.turnId ||
-          snapshot.receipt.effectiveSandbox !== 'READ_ONLY'
+          snapshot.receipt.effectiveSandbox !== permissionMode
         ) {
           throw new Error('Cannot mark an unproven Codex execution running')
         }

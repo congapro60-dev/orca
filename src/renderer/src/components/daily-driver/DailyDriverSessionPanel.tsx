@@ -6,8 +6,49 @@ import { translate } from '@/i18n/i18n'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 const label = (key: string, fallback: string): string => translate(`dailyDriver.${key}`, fallback)
+
+export function DailyDriverPermissionField({
+  value,
+  disabled,
+  onChange
+}: {
+  value: 'READ_ONLY' | 'WORKSPACE_WRITE'
+  disabled: boolean
+  onChange: (value: 'READ_ONLY' | 'WORKSPACE_WRITE') => void
+}) {
+  return (
+    <>
+      <Label htmlFor="orca-permission">{label('permission', 'Permission')}</Label>
+      <Select
+        value={value}
+        disabled={disabled}
+        onValueChange={(next) =>
+          onChange(next === 'WORKSPACE_WRITE' ? 'WORKSPACE_WRITE' : 'READ_ONLY')
+        }
+      >
+        <SelectTrigger id="orca-permission">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="READ_ONLY">{label('readOnly', 'Read only')}</SelectItem>
+          <SelectItem value="WORKSPACE_WRITE">
+            {label('workspaceWrite', 'Workspace write')}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </>
+  )
+}
 
 export function DailyDriverSessionPanel({
   view,
@@ -21,10 +62,12 @@ export function DailyDriverSessionPanel({
   item: WorkItem
   busy: boolean
   refresh: () => void
-  act: (method: 'cancel' | 'verify' | 'start' | 'reconcile') => void
+  act: (method: 'cancel' | 'verify' | 'start' | 'reconcile', testCommandItemIds?: string[]) => void
   signIn: () => void
 }): React.JSX.Element {
   const [accepted, setAccepted] = useState(false)
+  const [testIds, setTestIds] = useState<string[]>([])
+  const writeMode = view.session.permissionMode === 'WORKSPACE_WRITE'
   const failedReason = view.events.toReversed().find((event) => event.type === 'WORK_FAILED')
     ?.payload.reason
   return (
@@ -37,6 +80,13 @@ export function DailyDriverSessionPanel({
       <CardContent className="space-y-3">
         <p className="text-sm">
           {label(`state.${item.status}`, item.status)} · {view.executionId ?? '—'}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {label('permission', 'Permission')}:{' '}
+          {label(
+            view.session.permissionMode === 'WORKSPACE_WRITE' ? 'workspaceWrite' : 'readOnly',
+            view.session.permissionMode === 'WORKSPACE_WRITE' ? 'Workspace write' : 'Read only'
+          )}
         </p>
         {view.elapsedMs !== null && (
           <p className="text-xs text-muted-foreground">
@@ -131,6 +181,59 @@ export function DailyDriverSessionPanel({
         )}
         {item.status === 'READY_FOR_REVIEW' && (
           <div className="space-y-3 border-t border-border pt-3">
+            {writeMode && (
+              <fieldset disabled={busy} className="space-y-2">
+                <legend className="text-sm font-medium">
+                  {label('validationCommands', 'Select commands you reviewed as tests')}
+                </legend>
+                <p className="text-xs text-muted-foreground">
+                  {label(
+                    'validationHelp',
+                    'Captured runtime commands, not an independent ORCA test run. Select only tests that validate the final changes.'
+                  )}
+                </p>
+                <pre className="scrollbar-sleek max-h-32 overflow-auto whitespace-pre-wrap break-all text-xs">
+                  {view.reviewEvidence?.observed?.changedFiles.join('\n') || '—'}
+                  {'\n'}Diff SHA-256: {view.reviewEvidence?.observed?.diffHash ?? '—'}
+                </pre>
+                {!view.reviewEvidence?.commands?.length && (
+                  <p className="text-sm">
+                    {label(
+                      'noValidationCommands',
+                      'No captured validation commands. Verification is blocked.'
+                    )}
+                  </p>
+                )}
+                {view.reviewEvidence?.commands?.map((command, index) => (
+                  <div key={command.itemId} className="flex items-start gap-2">
+                    <Checkbox
+                      id={`orca-test-${index}`}
+                      disabled={
+                        command.status !== 'completed' ||
+                        command.exitCode !== 0 ||
+                        !command.command.trim() ||
+                        command.command.length >= 2048
+                      }
+                      checked={testIds.includes(command.itemId)}
+                      onCheckedChange={(checked) => {
+                        setAccepted(false)
+                        setTestIds((ids) =>
+                          checked === true
+                            ? [...ids, command.itemId]
+                            : ids.filter((id) => id !== command.itemId)
+                        )
+                      }}
+                    />
+                    <label
+                      htmlFor={`orca-test-${index}`}
+                      className="min-w-0 break-all font-mono text-xs"
+                    >
+                      {command.command} · {command.status} · exit {command.exitCode ?? '?'}
+                    </label>
+                  </div>
+                ))}
+              </fieldset>
+            )}
             <p className="text-sm text-muted-foreground">
               {label(
                 'reviewGuidance',
@@ -148,8 +251,14 @@ export function DailyDriverSessionPanel({
               </label>
             </div>
             <Button
-              disabled={busy || !accepted || !view.result || !view.evidence?.resultStored}
-              onClick={() => act('verify')}
+              disabled={
+                busy ||
+                !accepted ||
+                !view.result ||
+                !view.evidence?.resultStored ||
+                (writeMode && (!view.reviewEvidence || !testIds.length))
+              }
+              onClick={() => act('verify', writeMode ? testIds : undefined)}
             >
               <ShieldCheck />
               {label('verify', 'Verify result')}

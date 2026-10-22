@@ -16,6 +16,7 @@ const request: CodexRuntimeRequest = {
 
 type Scenario = {
   sandbox?: string
+  sandboxFields?: Record<string, unknown>
   cwd?: string
   account?: string | null
   untrustedHook?: boolean
@@ -70,7 +71,18 @@ function fixture(scenario: Scenario = {}) {
             thread: { id: 'thread-1' },
             cwd: scenario.cwd ?? request.worktree,
             model: 'reported-model',
-            sandbox: { type: scenario.sandbox ?? 'readOnly', networkAccess: false },
+            sandbox: {
+              type: scenario.sandbox ?? 'readOnly',
+              networkAccess: false,
+              ...(scenario.sandbox === 'workspaceWrite'
+                ? {
+                    writableRoots: [request.worktree],
+                    excludeSlashTmp: true,
+                    excludeTmpdirEnvVar: true
+                  }
+                : {}),
+              ...scenario.sandboxFields
+            },
             approvalPolicy: 'never'
           }
         }
@@ -145,8 +157,56 @@ describe('CodexRuntimeAdapterV0', () => {
     expect(() => adapter.getStatus(receipt.executionId)).toThrow(/Unknown/)
   })
 
+  it('maps WORKSPACE_WRITE to the bounded workspace sandbox', async () => {
+    const { adapter, calls, getInvocation } = fixture({ sandbox: 'workspaceWrite' })
+    const receipt = await adapter.start({ ...request, permissionMode: 'WORKSPACE_WRITE' })
+    const result = await adapter.result(receipt.executionId)
+    expect(result.status).toBe('COMPLETED')
+    expect(getInvocation().args).toContain('--config=model_provider="openai"')
+    expect(result.receipt.effectiveSandbox).toBe('WORKSPACE_WRITE')
+    expect(calls.find((call) => call.method === 'thread/start')?.params).toMatchObject({
+      sandbox: 'workspace-write',
+      config: {
+        sandbox_workspace_write: {
+          writable_roots: [request.worktree],
+          network_access: false,
+          exclude_tmpdir_env_var: true,
+          exclude_slash_tmp: true
+        }
+      }
+    })
+    expect(calls.find((call) => call.method === 'turn/start')?.params).toMatchObject({
+      sandboxPolicy: {
+        type: 'workspaceWrite',
+        networkAccess: false,
+        writableRoots: [request.worktree],
+        excludeTmpdirEnvVar: true,
+        excludeSlashTmp: true
+      }
+    })
+  })
+
+  it.each<Scenario>([
+    { sandbox: 'readOnly' },
+    { sandbox: 'workspaceWrite', sandboxFields: { writableRoots: [tmpdir()] } },
+    { sandbox: 'workspaceWrite', sandboxFields: { writableRoots: [request.worktree, tmpdir()] } },
+    { sandbox: 'workspaceWrite', sandboxFields: { writableRoots: [] } },
+    { sandbox: 'workspaceWrite', sandboxFields: { writableRoots: ['relative'] } },
+    { sandbox: 'workspaceWrite', sandboxFields: { networkAccess: true } },
+    { sandbox: 'workspaceWrite', sandboxFields: { excludeTmpdirEnvVar: false } },
+    { sandbox: 'workspaceWrite', sandboxFields: { excludeSlashTmp: undefined } }
+  ])('refuses unproven WORKSPACE_WRITE policy before turn/start: %j', async (scenario) => {
+    const { adapter, calls } = fixture(scenario)
+    const receipt = await adapter.start({ ...request, permissionMode: 'WORKSPACE_WRITE' })
+    const result = await adapter.result(receipt.executionId)
+    expect(result.status).toBe('FAILED')
+    expect(result.receipt.effectiveSandbox).toBe('UNKNOWN_UNVERIFIED')
+    expect(calls.some((call) => call.method === 'turn/start')).toBe(false)
+  })
+
   it.each<Scenario>([
     { sandbox: 'dangerFullAccess' },
+    { sandbox: 'workspaceWrite' },
     { cwd: join(tmpdir(), 'wrong') },
     { account: 'apiKey' },
     { account: null },

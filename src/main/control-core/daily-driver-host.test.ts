@@ -176,6 +176,41 @@ describe('Daily Driver uses registered local workspace authority', () => {
     )
   })
 
+  it('persists WORKSPACE_WRITE permission in the logical session and runtime request', async () => {
+    const { runtime } = fixture()
+    const host = new DailyDriverHost(runtime as never)
+    const created = (await host.call({
+      method: 'create',
+      projectId: 'project-one',
+      workspaceId: 'workspace-local',
+      objective: 'Make bounded change',
+      permissionMode: 'WORKSPACE_WRITE'
+    })) as DailyDriverSessionView
+    expect(created.session.permissionMode).toBe('WORKSPACE_WRITE')
+    const reopened = (await new DailyDriverHost(runtime as never).call({
+      method: 'open',
+      sessionId: created.session.logicalWorkSessionId
+    })) as DailyDriverSessionView
+    expect(reopened.session.permissionMode).toBe('WORKSPACE_WRITE')
+    deps.resolveExecutable.mockReturnValueOnce('fixture-codex.exe')
+    deps.supervisor.start.mockImplementationOnce(async () => {
+      throw new Error('fixture preflight refusal')
+    })
+    await host.call({
+      method: 'start',
+      sessionId: created.session.logicalWorkSessionId,
+      expectedRevision: created.items.find((item) => item.branchId === 'main')!.revision
+    })
+    await vi.waitFor(() => expect(deps.supervisor.start).toHaveBeenCalled())
+    expect(deps.supervisor.start).toHaveBeenLastCalledWith(
+      expect.any(String),
+      expect.objectContaining({ permissionMode: 'WORKSPACE_WRITE' }),
+      undefined,
+      expect.any(AbortSignal),
+      expect.any(Function)
+    )
+  })
+
   it('rechecks project/workspace ownership immediately before dispatch', async () => {
     const { host, db, unregisterLocal } = fixture()
     const created = (await host.call({
@@ -253,5 +288,95 @@ describe('Daily Driver uses registered local workspace authority', () => {
     ).rejects.toThrow()
     expect(db.db.prepare('SELECT COUNT(*) AS n FROM control_work_sessions').get()?.n).toBe(0)
     expect(db.db.prepare('SELECT COUNT(*) AS n FROM tasks').get()?.n).toBe(0)
+  })
+})
+
+describe('Daily Driver follow-up continues the same logical session', () => {
+  it('adds a conversation branch in the same session and dispatches it with the session permission', async () => {
+    const { host, db } = fixture()
+    const created = (await host.call({
+      method: 'create',
+      projectId: 'project-one',
+      workspaceId: 'workspace-local',
+      objective: 'First instruction'
+    })) as DailyDriverSessionView
+    const main = created.items.find((row) => row.branchId === 'main')!
+    deps.resolveExecutable.mockReturnValueOnce('fixture-codex.exe')
+    deps.supervisor.start.mockImplementationOnce(() => new Promise(() => {}))
+
+    const view = (await host.call({
+      method: 'followup',
+      sessionId: created.session.logicalWorkSessionId,
+      objective: 'Follow-up instruction'
+    })) as DailyDriverSessionView
+
+    expect(view.session.logicalWorkSessionId).toBe(created.session.logicalWorkSessionId)
+    expect(view.items).toHaveLength(3)
+    const followup = view.items.at(-1)!
+    expect(followup.branchId).toMatch(/^conversation-/)
+    expect(followup.objective).toBe('Follow-up instruction')
+    expect(followup.parentWorkItemId).toBe(created.session.rootWorkItemId)
+    expect(followup.workItemId).not.toBe(main.workItemId)
+    await vi.waitFor(() => expect(deps.supervisor.start).toHaveBeenCalledTimes(1))
+    expect(deps.supervisor.start).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ permissionMode: 'READ_ONLY' }),
+      undefined,
+      expect.any(AbortSignal),
+      expect.any(Function)
+    )
+    expect(db.db.prepare('SELECT COUNT(*) AS n FROM control_work_sessions').get()?.n).toBe(1)
+  })
+
+  it('refuses a follow-up that tries to widen the persisted session permission', async () => {
+    const { host } = fixture()
+    const created = (await host.call({
+      method: 'create',
+      projectId: 'project-one',
+      workspaceId: 'workspace-local',
+      objective: 'Read only inspection'
+    })) as DailyDriverSessionView
+    await expect(
+      host.call({
+        method: 'followup',
+        sessionId: created.session.logicalWorkSessionId,
+        objective: 'Escalate',
+        permissionMode: 'WORKSPACE_WRITE'
+      })
+    ).rejects.toThrow(/permission/i)
+    expect(deps.supervisor.start).not.toHaveBeenCalled()
+  })
+
+  it('acts on the latest conversation branch instead of the original main item', async () => {
+    const { host, db } = fixture()
+    const created = (await host.call({
+      method: 'create',
+      projectId: 'project-one',
+      workspaceId: 'workspace-local',
+      objective: 'First instruction'
+    })) as DailyDriverSessionView
+    const main = created.items.find((row) => row.branchId === 'main')!
+    deps.resolveExecutable.mockReturnValueOnce('fixture-codex.exe')
+    deps.supervisor.start.mockImplementationOnce(() => new Promise(() => {}))
+    const view = (await host.call({
+      method: 'followup',
+      sessionId: created.session.logicalWorkSessionId,
+      objective: 'Follow-up instruction'
+    })) as DailyDriverSessionView
+    const followup = view.items.at(-1)!
+
+    await host.call({
+      method: 'cancel',
+      sessionId: created.session.logicalWorkSessionId
+    })
+
+    const cancelled = db.db
+      .prepare('SELECT cancel_requested AS n FROM control_work_items WHERE id=?')
+      .get(followup.workItemId) as { n: number }
+    const mainCancelled = db.db
+      .prepare('SELECT cancel_requested AS n FROM control_work_items WHERE id=?')
+      .get(main.workItemId) as { n: number }
+    expect(cancelled.n).toBe(1)
+    expect(mainCancelled.n).toBe(0)
   })
 })

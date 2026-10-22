@@ -12,7 +12,7 @@ export type CodexExecutionStatus =
 export type CodexRuntimeRequest = {
   worktree: string
   prompt: string
-  permissionMode: 'READ_ONLY'
+  permissionMode: 'READ_ONLY' | 'WORKSPACE_WRITE'
   approvalPolicy: 'never'
   requestedModel?: string
   executablePath: string
@@ -29,7 +29,7 @@ export type CodexRuntimeReceipt = {
   requestedModel: string | null
   resolvedModel: string | null
   actualModel: 'UNKNOWN_UNVERIFIED'
-  effectiveSandbox: 'READ_ONLY' | 'UNKNOWN_UNVERIFIED'
+  effectiveSandbox: 'READ_ONLY' | 'WORKSPACE_WRITE' | 'UNKNOWN_UNVERIFIED'
   approvalPolicy: 'never'
   worktree: string
   codexHome: string

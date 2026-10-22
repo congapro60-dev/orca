@@ -14,7 +14,9 @@ afterEach(() => {
   }
 })
 
-function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean } = {}) {
+function fixture(
+  options: { hold?: boolean; fail?: boolean; disconnect?: boolean; writable?: boolean } = {}
+) {
   const db = new OrchestrationDb(':memory:')
   databases.push(db)
   const request: CodexRuntimeRequest = {
@@ -22,7 +24,7 @@ function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean
     worktree: join(tmpdir(), 'supervisor-repo'),
     executablePath: join(tmpdir(), 'installed', 'codex.exe'),
     codexHome: join(tmpdir(), 'profile'),
-    permissionMode: 'READ_ONLY',
+    permissionMode: options.writable ? 'WORKSPACE_WRITE' : 'READ_ONLY',
     approvalPolicy: 'never'
   }
   const prepare = vi.fn(async () => ({
@@ -64,7 +66,15 @@ function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean
             cwd: request.worktree,
             model: 'reported-model',
             approvalPolicy: 'never',
-            sandbox: { type: 'readOnly', networkAccess: false }
+            sandbox: options.writable
+              ? {
+                  type: 'workspaceWrite',
+                  networkAccess: false,
+                  writableRoots: [request.worktree],
+                  excludeSlashTmp: true,
+                  excludeTmpdirEnvVar: true
+                }
+              : { type: 'readOnly', networkAccess: false }
           }
         }
         if (method === 'turn/start') {
@@ -137,6 +147,16 @@ function fixture(options: { hold?: boolean; fail?: boolean; disconnect?: boolean
 }
 
 describe('Native Codex execution supervisor', () => {
+  it('persists a WORKSPACE_WRITE lifecycle through the real adapter and native store', async () => {
+    const { db, supervisor, task, request } = fixture({ writable: true })
+    const row = await supervisor.start(task.id, request)
+    const result = await supervisor.result(row.executionId)
+    expect(result).toMatchObject({
+      status: 'COMPLETED',
+      receipt: { effectiveSandbox: 'WORKSPACE_WRITE' }
+    })
+    expect(db.getWorkerDispatch(row.dispatchId)?.state).toBe('succeeded')
+  })
   it('carries early command evidence through the adapter into native persistence', async () => {
     const { supervisor, task, request } = fixture()
     const row = await supervisor.start(task.id, request)

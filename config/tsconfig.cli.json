@@ -46,6 +46,8 @@
     "../src/main/codex/codex-hook-trust-grant.ts",
     "../src/main/codex/codex-managed-trust-reconciliation.ts",
     "../src/main/codex/codex-process-exit-deadline.ts",
+    "../src/main/codex/codex-process-observation.ts",
+    "../src/main/codex/codex-process-tree-verifier.ts",
     "../src/main/codex/codex-state-db.ts",
     "../src/main/codex/codex-trust-identity.ts",
     "../src/main/codex/codex-trust-config-rollback.ts",
@@ -116,7 +118,9 @@
     "../src/main/startup/serve-mode-argv.ts",
     "../src/main/runtime/runtime-metadata.ts",
     "../src/main/sqlite/sync-database.ts",
-    "../src/main/win32-utils.ts"
+    "../src/main/win32-utils.ts",
+    "../src/main/windows/windows-process-table.ts",
+    "../src/main/windows/windows-process-table-cim-scan.ts"
   ],
   "compilerOptions": {
     "composite": true,

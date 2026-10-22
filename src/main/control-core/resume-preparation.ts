@@ -4,9 +4,17 @@ import { captureWorkspaceCheckpoint } from './workspace-checkpoint'
 import { reconcileResume } from './resume-reconcile'
 import type { WorkspaceCheckpoint } from '../../shared/control-evidence-contract'
 
-export function startSource(work: ControlWorkStore, id: string, expectedRevision: number) {
+export function startSource(
+  work: ControlWorkStore,
+  id: string,
+  expectedRevision: number,
+  requestedPermission?: string
+) {
   const item = work.item(id)
   const session = work.session(item.logicalWorkSessionId)
+  if (requestedPermission !== undefined && requestedPermission !== session.permissionMode) {
+    throw new Error('Runtime permission differs from canonical session permission')
+  }
   if (item.revision !== expectedRevision) {
     throw new Error('Stale WorkItem revision')
   }
@@ -21,14 +29,15 @@ export function startSource(work: ControlWorkStore, id: string, expectedRevision
   if (item.dependsOn.some((dep) => work.item(dep).status !== 'VERIFIED')) {
     throw new Error('WorkItem dependencies are not verified')
   }
-  if (
-    work.native.db
-      .prepare(
-        "SELECT 1 FROM control_work_items WHERE status IN ('WAITING','RUNNING','BLOCKED') AND NOT (id=? AND status='BLOCKED') LIMIT 1"
-      )
-      .get(item.workItemId)
-  ) {
-    throw new Error('Alpha runs only one WorkItem at a time')
+  const blocker = work.native.db
+    .prepare(
+      "SELECT id,session_id,status FROM control_work_items WHERE status IN ('WAITING','RUNNING','BLOCKED') AND NOT (id=? AND status='BLOCKED') LIMIT 1"
+    )
+    .get(item.workItemId) as { id: string; session_id: string; status: string } | undefined
+  if (blocker) {
+    throw new Error(
+      `Alpha runs only one WorkItem at a time; session ${blocker.session_id}, WorkItem ${blocker.id} is ${blocker.status}. Reconcile that work before starting another task.`
+    )
   }
   return { item, session }
 }
@@ -41,7 +50,8 @@ export function assertStartSource(work: ControlWorkStore, source: ReturnType<typ
     current.item.status !== source.item.status ||
     current.session.logicalWorkSessionId !== source.session.logicalWorkSessionId ||
     current.session.runId !== source.session.runId ||
-    current.session.worktree !== source.session.worktree
+    current.session.worktree !== source.session.worktree ||
+    current.session.permissionMode !== source.session.permissionMode
   ) {
     throw new Error('WorkItem resume source identity changed')
   }

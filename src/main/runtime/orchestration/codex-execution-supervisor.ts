@@ -60,7 +60,13 @@ export class CodexExecutionSupervisor {
       codexHome: prepared.codexHome,
       executablePath: prepared.executable
     }
-    this.store.accept(taskId, executionId, prepared.worktree, mutationReceipt)
+    this.store.accept(
+      taskId,
+      executionId,
+      prepared.worktree,
+      mutationReceipt,
+      request.permissionMode
+    )
     const preparation = new AbortController()
     const abortPreparation = () => preparation.abort()
     externalSignal?.addEventListener('abort', abortPreparation, { once: true })

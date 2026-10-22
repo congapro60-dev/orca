@@ -42,7 +42,11 @@ export class ControlWorkStore {
     projectId: string,
     worktree: string,
     objective: string,
-    criteria: { doneWhen?: string[]; constraints?: string[] } = {}
+    criteria: {
+      doneWhen?: string[]
+      constraints?: string[]
+      permissionMode?: 'READ_ONLY' | 'WORKSPACE_WRITE'
+    } = {}
   ): LogicalWorkSession {
     const input = z
       .object({
@@ -51,7 +55,11 @@ export class ControlWorkStore {
         objective: Text
       })
       .parse({ projectId, worktree, objective })
+    const permissionMode = z
+      .enum(['READ_ONLY', 'WORKSPACE_WRITE'])
+      .parse(criteria.permissionMode ?? 'READ_ONLY')
     return this.transaction(() => {
+      const { permissionMode: _permissionMode, ...itemCriteria } = criteria
       const id = randomUUID()
       const rootId = randomUUID()
       const now = new Date().toISOString()
@@ -65,8 +73,13 @@ export class ControlWorkStore {
         (id,project_id,worktree,objective,status,root_id,run_id,created_at,updated_at)
         VALUES (?,?,?,?,'ACTIVE',?,?,?,?)`)
         .run(id, input.projectId, input.worktree, input.objective, rootId, run.id, now, now)
+      this.native.db
+        .prepare(
+          'INSERT INTO control_work_session_profiles (session_id,permission_mode) VALUES (?,?)'
+        )
+        .run(id, permissionMode)
       this.insertItem(id, rootId, null, { objective: input.objective, branchId: 'root' })
-      this.addItem(id, rootId, { objective: input.objective, branchId: 'main', ...criteria })
+      this.addItem(id, rootId, { objective: input.objective, branchId: 'main', ...itemCriteria })
       return this.session(id)
     })
   }
@@ -77,7 +90,7 @@ export class ControlWorkStore {
       const session = this.session(sessionId)
       const parent = this.item(parentId)
       if (
-        session.status !== 'ACTIVE' ||
+        !['ACTIVE', 'COMPLETED'].includes(session.status) ||
         parent.logicalWorkSessionId !== sessionId ||
         parent.status === 'VERIFIED'
       ) {
@@ -137,12 +150,16 @@ export class ControlWorkStore {
   session(id: string): LogicalWorkSession {
     const row = this.native.db
       .prepare(`SELECT id AS logicalWorkSessionId,project_id AS projectId,worktree,objective,status,
-      root_id AS rootWorkItemId,run_id AS runId,created_at AS createdAt,updated_at AS updatedAt
-      FROM control_work_sessions WHERE id=?`)
+      root_id AS rootWorkItemId,run_id AS runId,created_at AS createdAt,updated_at AS updatedAt,
+      COALESCE(control_work_session_profiles.permission_mode,'READ_ONLY') AS permissionMode
+      FROM control_work_sessions
+      LEFT JOIN control_work_session_profiles ON control_work_session_profiles.session_id=control_work_sessions.id
+      WHERE id=?`)
       .get(id) as LogicalWorkSession | undefined
     if (!row) {
       throw new Error('Unknown logical work session')
     }
+    z.enum(['READ_ONLY', 'WORKSPACE_WRITE']).parse(row.permissionMode)
     return row
   }
 
