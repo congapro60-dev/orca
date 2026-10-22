@@ -1,6 +1,5 @@
 import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from 'react'
 import { BrowserPageZoomIndicator } from './browser-page-zoom-indicator'
-import { translate } from '@/i18n/i18n'
 import { toHttpsRecoveryUrl } from '../../../../../shared/browser-url'
 import type {
   BrowserCertificateFailure,
@@ -17,7 +16,7 @@ import { BrowserGuestAnnotateOverlays } from '../annotate/browser-guest-annotate
 import type { MarkupModeController } from '../annotate/useMarkupMode'
 import type { GrabModeHook } from '../annotate/useGrabMode'
 import type { BrowserOverlayViewport } from '../describe-page/browser-annotation-geometry'
-import { retryBrowserTabLoad, toDisplayUrl } from '../describe-page/browser-page-url-display'
+import { retryBrowserTabLoad } from '../describe-page/browser-page-url-display'
 import type { BrowserTabPageState } from '../describe-page/browser-page-types'
 import type { useBrowserPageAnnotationSend } from '../annotate/use-browser-page-annotation-send'
 import type { useBrowserPageGrabAnnotations } from '../annotate/use-browser-page-grab-annotations'
@@ -36,7 +35,6 @@ export function BrowserPageViewportOverlays({
   onUpdatePageStateRef,
   retryGuestRecoveryRef,
   navigateToUrl,
-  setResourceNotice,
   certificateFailure,
   sshRouted,
   autoRetry,
@@ -62,7 +60,6 @@ export function BrowserPageViewportOverlays({
   onUpdatePageStateRef: MutableRefObject<(tabId: string, updates: BrowserTabPageState) => void>
   retryGuestRecoveryRef: MutableRefObject<() => void>
   navigateToUrl: (url: string) => void
-  setResourceNotice: Dispatch<SetStateAction<string | null>>
   certificateFailure: BrowserCertificateFailure | null
   sshRouted: boolean
   autoRetry: Omit<BrowserLoadFailureAutoRetry, 'loading'>
@@ -102,7 +99,6 @@ export function BrowserPageViewportOverlays({
           worktreeId={worktreeId}
           autoRetry={autoRetry}
           navigateToUrl={navigateToUrl}
-          setResourceNotice={setResourceNotice}
           onRetry={() => {
             const webview = webviewRef.current
             if (!webview) {
@@ -133,7 +129,6 @@ function BrowserPageLoadFailure({
   worktreeId,
   autoRetry,
   navigateToUrl,
-  setResourceNotice,
   onRetry
 }: {
   browserTab: BrowserPageState
@@ -145,7 +140,6 @@ function BrowserPageLoadFailure({
   worktreeId: string
   autoRetry: Omit<BrowserLoadFailureAutoRetry, 'loading'>
   navigateToUrl: (url: string) => void
-  setResourceNotice: Dispatch<SetStateAction<string | null>>
   onRetry: () => void
 }): React.JSX.Element {
   const ssh = useSshWorkspaceBrowserLoadFailureRoute(worktreeId)
@@ -153,16 +147,9 @@ function BrowserPageLoadFailure({
     <BrowserLoadFailureOverlay
       loadError={loadError}
       externalUrl={failureExternalUrl}
-      currentUrl={toDisplayUrl(failedNavigationUrl)}
       httpsRecoveryUrl={toHttpsRecoveryUrl(failedNavigationUrl)}
       onRetry={onRetry}
       onTryHttps={navigateToUrl}
-      onCopy={(url) => {
-        void window.api.ui.writeClipboardText(url)
-        setResourceNotice(
-          translate('browser.loadFailure.addressCopied', 'Copied the current page address.')
-        )
-      }}
       onOpenExternal={(url) => void window.api.shell.openUrl(url)}
       certificateFailure={certificateFailure}
       sshRoutedHint={sshRouted}
