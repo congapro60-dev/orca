@@ -1,0 +1,3790 @@
+{
+  "numTotalTestSuites": 119,
+  "numPassedTestSuites": 117,
+  "numFailedTestSuites": 2,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 307,
+  "numPassedTests": 305,
+  "numFailedTests": 2,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1792630955368,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["action icons"],
+          "fullName": "action icons encodes ImageData pixels as a PNG without changing them",
+          "status": "passed",
+          "title": "encodes ImageData pixels as a PNG without changing them",
+          "duration": 6.022832999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action icons"],
+          "fullName": "action icons keeps the smallest ImageData that still covers the toolbar at 2x",
+          "status": "passed",
+          "title": "keeps the smallest ImageData that still covers the toolbar at 2x",
+          "duration": 13.73804199999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action icons"],
+          "fullName": "action icons prefers the first size at or above 32 px, else the largest",
+          "status": "passed",
+          "title": "prefers the first size at or above 32 px, else the largest",
+          "duration": 0.17862500000001091,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveActionIconDataUrl"],
+          "fullName": "resolveActionIconDataUrl serves the extension file as a data URL and never reads outside the extension",
+          "status": "passed",
+          "title": "serves the extension file as a data URL and never reads outside the extension",
+          "duration": 77.27012500000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630975866,
+      "endTime": 1792630975963.27,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-action-icon.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["chrome.action state"],
+          "fullName": "chrome.action state starts from manifest.action, falling back to the extension name and its icons",
+          "status": "passed",
+          "title": "starts from manifest.action, falling back to the extension name and its icons",
+          "duration": 49.978875000000016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["chrome.action state"],
+          "fullName": "chrome.action state lets a tab override the global value on that tab only",
+          "status": "passed",
+          "title": "lets a tab override the global value on that tab only",
+          "duration": 6.749124999999822,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["chrome.action state"],
+          "fullName": "chrome.action state falls back a level when a value is cleared",
+          "status": "passed",
+          "title": "falls back a level when a value is cleared",
+          "duration": 76.00820799999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["chrome.action state"],
+          "fullName": "chrome.action state drops a tab's overrides when the tab moves on, and says whether it had any",
+          "status": "passed",
+          "title": "drops a tab's overrides when the tab moves on, and says whether it had any",
+          "duration": 1.570207999999866,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["chrome.action state"],
+          "fullName": "chrome.action state shows a blocked-request count over the global text, under the tab text",
+          "status": "passed",
+          "title": "shows a blocked-request count over the global text, under the tab text",
+          "duration": 1.191000000000031,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors parses [255,0,0,255]",
+          "status": "passed",
+          "title": "parses [255,0,0,255]",
+          "duration": 1.04037500000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors parses \"#f00\"",
+          "status": "passed",
+          "title": "parses \"#f00\"",
+          "duration": 9.935625000000073,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors parses \"#00ff0080\"",
+          "status": "passed",
+          "title": "parses \"#00ff0080\"",
+          "duration": 3.158625000000029,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors parses \"rgb(1, 2, 3)\"",
+          "status": "passed",
+          "title": "parses \"rgb(1, 2, 3)\"",
+          "duration": 0.4941670000000613,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors parses \"rgba(10, 20, 30, 0.5)\"",
+          "status": "passed",
+          "title": "parses \"rgba(10, 20, 30, 0.5)\"",
+          "duration": 0.5944580000000315,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors rejects \"blurple\"",
+          "status": "passed",
+          "title": "rejects \"blurple\"",
+          "duration": 0.264084000000139,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors rejects [1,2,3]",
+          "status": "passed",
+          "title": "rejects [1,2,3]",
+          "duration": 0.0940410000000611,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors rejects \"#12\"",
+          "status": "passed",
+          "title": "rejects \"#12\"",
+          "duration": 0.3187089999998989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors rejects 42",
+          "status": "passed",
+          "title": "rejects 42",
+          "duration": 0.08420799999998962,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["badge colors"],
+          "fullName": "badge colors renders a color as CSS",
+          "status": "passed",
+          "title": "renders a color as CSS",
+          "duration": 1.1204999999999927,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630998362,
+      "endTime": 1792630998515.1206,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-action-state.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["preload API surface"],
+          "fullName": "preload API surface pins the preload channel copies to the ones main listens on",
+          "status": "passed",
+          "title": "pins the preload channel copies to the ones main listens on",
+          "duration": 1.1062920000003942,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["preload API surface"],
+          "fullName": "preload API surface installs exactly what main registers, under the same permission",
+          "status": "passed",
+          "title": "installs exactly what main registers, under the same permission",
+          "duration": 7.07116600000154,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension API host"],
+          "fullName": "extension API host takes the caller from the sender frame and returns the handler result",
+          "status": "passed",
+          "title": "takes the caller from the sender frame and returns the handler result",
+          "duration": 13.57745900000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension API host"],
+          "fullName": "extension API host refuses web pages, extensions not loaded in that session, and unknown sessions",
+          "status": "passed",
+          "title": "refuses web pages, extensions not loaded in that session, and unknown sessions",
+          "duration": 2.364000000001397,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension API host"],
+          "fullName": "extension API host enforces the namespace permission and validates arguments",
+          "status": "passed",
+          "title": "enforces the namespace permission and validates arguments",
+          "duration": 12.655166000000463,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension API host"],
+          "fullName": "extension API host delivers events only to frames that registered a listener",
+          "status": "passed",
+          "title": "delivers events only to frames that registered a listener",
+          "duration": 1.1901669999970181,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631003562,
+      "endTime": 1792631003601.1902,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-api-host.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["permissions.request"],
+          "fullName": "permissions.request needs a user gesture in a worker, then prompts, persists the grant and fires onAdded",
+          "status": "passed",
+          "title": "needs a user gesture in a worker, then prompts, persists the grant and fires onAdded",
+          "duration": 25.66691699999501,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["permissions.request"],
+          "fullName": "permissions.request keeps nothing when the user declines, and refuses a second prompt while one is open",
+          "status": "passed",
+          "title": "keeps nothing when the user declines, and refuses a second prompt while one is open",
+          "duration": 0.5521250000019791,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["privacy settings"],
+          "fullName": "privacy settings reports who controls a setting and tells other extensions when it changes",
+          "status": "passed",
+          "title": "reports who controls a setting and tells other extensions when it changes",
+          "duration": 3.006500000003143,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action icons"],
+          "fullName": "action icons reads icon paths as Chrome resolves them: against the worker script, or own URLs",
+          "status": "passed",
+          "title": "reads icon paths as Chrome resolves them: against the worker script, or own URLs",
+          "duration": 1.333666999998968,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["persistAcrossSessions content scripts"],
+          "fullName": "persistAcrossSessions content scripts serves the restore namespace the preload calls, outside the extension-visible surface",
+          "status": "passed",
+          "title": "serves the restore namespace the preload calls, outside the extension-visible surface",
+          "duration": 204.83341700000165,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["persistAcrossSessions content scripts"],
+          "fullName": "persistAcrossSessions content scripts records persisted registrations and hands them to the worker once per session",
+          "status": "passed",
+          "title": "records persisted registrations and hands them to the worker once per session",
+          "duration": 1.573167000002286,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["storage change relay"],
+          "fullName": "storage change relay forwards a page write only to the same extension worker in the same session",
+          "status": "passed",
+          "title": "forwards a page write only to the same extension worker in the same session",
+          "duration": 1.149083000003884,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["storage change relay"],
+          "fullName": "storage change relay refuses reports from the worker and malformed changes",
+          "status": "passed",
+          "title": "refuses reports from the worker and malformed changes",
+          "duration": 0.7376250000015716,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["context menus in the page menu"],
+          "fullName": "context menus in the page menu groups items per extension and runs onClicked with OnClickData",
+          "status": "passed",
+          "title": "groups items per extension and runs onClicked with OnClickData",
+          "duration": 28.750707999999577,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["context menus in the page menu"],
+          "fullName": "context menus in the page menu refuses ids the extension already used",
+          "status": "passed",
+          "title": "refuses ids the extension already used",
+          "duration": 0.68604200000118,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["cookies"],
+          "fullName": "cookies needs host permission, reads Chrome-shaped cookies and hides hosts it cannot see",
+          "status": "passed",
+          "title": "needs host permission, reads Chrome-shaped cookies and hides hosts it cannot see",
+          "duration": 12.606665999999677,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["webRequest forwarding"],
+          "fullName": "webRequest forwarding maps Electron details to Chrome details and pre-filters by listener filter",
+          "status": "passed",
+          "title": "maps Electron details to Chrome details and pre-filters by listener filter",
+          "duration": 0.5851660000043921,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["storage.sync"],
+          "fullName": "storage.sync reads with every Chrome key form and keeps values as JSON",
+          "status": "passed",
+          "title": "reads with every Chrome key form and keeps values as JSON",
+          "duration": 7.619333000002371,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["storage.sync"],
+          "fullName": "storage.sync sends exact old and new values to the extension pages and worker in that session only",
+          "status": "passed",
+          "title": "sends exact old and new values to the extension pages and worker in that session only",
+          "duration": 5.640583000000333,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["storage.sync"],
+          "fullName": "storage.sync fails a write that breaks Chrome's quotas and stores none of it",
+          "status": "passed",
+          "title": "fails a write that breaks Chrome's quotas and stores none of it",
+          "duration": 35.09441700000025,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["chrome.extension access checks"],
+          "fullName": "chrome.extension access checks reports no file or incognito access, matching how Orca loads extensions",
+          "status": "passed",
+          "title": "reports no file or incognito access, matching how Orca loads extensions",
+          "duration": 0.31570799999462906,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631003810,
+      "endTime": 1792631004141.3157,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-api-namespaces.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName accepts manifest.json",
+          "status": "passed",
+          "title": "accepts manifest.json",
+          "duration": 7.7620410000004085,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName accepts js/background.js",
+          "status": "passed",
+          "title": "accepts js/background.js",
+          "duration": 0.7663330000000315,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName accepts _locales/en/messages.json",
+          "status": "passed",
+          "title": "accepts _locales/en/messages.json",
+          "duration": 6.010833000000275,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName accepts images/",
+          "status": "passed",
+          "title": "accepts images/",
+          "duration": 3.066834000000199,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"\"",
+          "status": "passed",
+          "title": "rejects \"\"",
+          "duration": 0.8556250000001455,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"../evil.js\"",
+          "status": "passed",
+          "title": "rejects \"../evil.js\"",
+          "duration": 0.28108300000030795,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"js/../../evil.js\"",
+          "status": "passed",
+          "title": "rejects \"js/../../evil.js\"",
+          "duration": 0.24233300000014424,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"/etc/passwd\"",
+          "status": "passed",
+          "title": "rejects \"/etc/passwd\"",
+          "duration": 0.26091600000017934,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"C:/Windows/evil.js\"",
+          "status": "passed",
+          "title": "rejects \"C:/Windows/evil.js\"",
+          "duration": 0.2644579999996495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"c:evil.js\"",
+          "status": "passed",
+          "title": "rejects \"c:evil.js\"",
+          "duration": 3.6179160000001502,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"js\\\\..\\\\evil.js\"",
+          "status": "passed",
+          "title": "rejects \"js\\\\..\\\\evil.js\"",
+          "duration": 0.4901669999999285,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"js//double.js\"",
+          "status": "passed",
+          "title": "rejects \"js//double.js\"",
+          "duration": 2.540042000000085,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"./manifest.json\"",
+          "status": "passed",
+          "title": "rejects \"./manifest.json\"",
+          "duration": 2.050000000000182,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["isSafeArchiveEntryName"],
+          "fullName": "isSafeArchiveEntryName rejects \"nul\\u0000byte\"",
+          "status": "passed",
+          "title": "rejects \"nul\\u0000byte\"",
+          "duration": 0.8380839999999807,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension archives"],
+          "fullName": "browser extension archives unpacks nested files into the target folder",
+          "status": "passed",
+          "title": "unpacks nested files into the target folder",
+          "duration": 60.26479100000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension archives"],
+          "fullName": "browser extension archives rejects an archive with an entry that escapes the folder before writing anything",
+          "status": "passed",
+          "title": "rejects an archive with an entry that escapes the folder before writing anything",
+          "duration": 3.584541000000172,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension archives"],
+          "fullName": "browser extension archives re-checks each path when writing",
+          "status": "passed",
+          "title": "re-checks each path when writing",
+          "duration": 8.731083000000126,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension archives"],
+          "fullName": "browser extension archives refuses to overwrite an existing file",
+          "status": "passed",
+          "title": "refuses to overwrite an existing file",
+          "duration": 9.353041999999732,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630972300,
+      "endTime": 1792630972412.353,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-archive.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["background wrapper"],
+          "fullName": "background wrapper loads the shim, then the classic worker, through importScripts",
+          "status": "passed",
+          "title": "loads the shim, then the classic worker, through importScripts",
+          "duration": 1.884166999999934,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["background wrapper"],
+          "fullName": "background wrapper imports the shim, then the module worker, from beside the original",
+          "status": "passed",
+          "title": "imports the shim, then the module worker, from beside the original",
+          "duration": 0.39833299999986593,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["background wrapper"],
+          "fullName": "background wrapper drops the Firefox background.scripts key that Chromium warns about in MV3",
+          "status": "passed",
+          "title": "drops the Firefox background.scripts key that Chromium warns about in MV3",
+          "duration": 0.17712500000016007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["background wrapper"],
+          "fullName": "background wrapper leaves extensions without a background worker alone",
+          "status": "passed",
+          "title": "leaves extensions without a background worker alone",
+          "duration": 0.11108300000000781,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["background wrapper"],
+          "fullName": "background wrapper rejects Manifest V2 and workers outside the folder",
+          "status": "passed",
+          "title": "rejects Manifest V2 and workers outside the folder",
+          "duration": 0.5071659999998701,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["background wrapper"],
+          "fullName": "background wrapper lets a restrictive extension-pages policy reach the API",
+          "status": "passed",
+          "title": "lets a restrictive extension-pages policy reach the API",
+          "duration": 0.24387500000011642,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630998832,
+      "endTime": 1792630998835.244,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-background-wrapper.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["manifest commands"],
+          "fullName": "manifest commands uses the platform key, Command for Ctrl on macOS, and Chrome shortcut strings",
+          "status": "passed",
+          "title": "uses the platform key, Command for Ctrl on macOS, and Chrome shortcut strings",
+          "duration": 4.471749999999929,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["manifest commands"],
+          "fullName": "manifest commands assigns suggested keys to at most four commands",
+          "status": "passed",
+          "title": "assigns suggested keys to at most four commands",
+          "duration": 0.5865830000000187,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["manifest commands"],
+          "fullName": "manifest commands refuses shortcuts without Ctrl, Command or Alt",
+          "status": "passed",
+          "title": "refuses shortcuts without Ctrl, Command or Alt",
+          "duration": 1.390666999999894,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["manifest commands"],
+          "fullName": "manifest commands matches the physical key so Option and Shift variants still fire",
+          "status": "passed",
+          "title": "matches the physical key so Option and Shift variants still fire",
+          "duration": 1.7589999999997872,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631001326,
+      "endTime": 1792631001333.759,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-commands.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["menu item bookkeeping"],
+          "fullName": "menu item bookkeeping rejects duplicate ids, unknown parents and descendant cycles like Chrome",
+          "status": "passed",
+          "title": "rejects duplicate ids, unknown parents and descendant cycles like Chrome",
+          "duration": 5.907874999999876,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["menu item bookkeeping"],
+          "fullName": "menu item bookkeeping removes descendants with their parent and keeps number and string ids apart",
+          "status": "passed",
+          "title": "removes descendants with their parent and keeps number and string ids apart",
+          "duration": 3.73566599999981,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["menu item bookkeeping"],
+          "fullName": "menu item bookkeeping keeps exactly one checked radio per adjacent run",
+          "status": "passed",
+          "title": "keeps exactly one checked radio per adjacent run",
+          "duration": 2.930165999999872,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["what a right-click shows"],
+          "fullName": "what a right-click shows applies contexts, document and target patterns, and visibility",
+          "status": "passed",
+          "title": "applies contexts, document and target patterns, and visibility",
+          "duration": 3.256541999999854,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["what a right-click shows"],
+          "fullName": "what a right-click shows matches a frame click against the frame URL and adds the frame context",
+          "status": "passed",
+          "title": "matches a frame click against the frame URL and adds the frame context",
+          "duration": 0.3445000000001528,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["what a right-click shows"],
+          "fullName": "what a right-click shows shows action items only for the toolbar menu",
+          "status": "passed",
+          "title": "shows action items only for the toolbar menu",
+          "duration": 0.11733399999980065,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["what a right-click shows"],
+          "fullName": "what a right-click shows drops a parent whose children are all filtered out",
+          "status": "passed",
+          "title": "drops a parent whose children are all filtered out",
+          "duration": 1.8436670000000959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["what a right-click shows"],
+          "fullName": "what a right-click shows shows one item inline and several under a submenu named after the extension",
+          "status": "passed",
+          "title": "shows one item inline and several under a submenu named after the extension",
+          "duration": 1.1802920000000086,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["clicking an item"],
+          "fullName": "clicking an item flips a checkbox and moves the radio selection before onClicked",
+          "status": "passed",
+          "title": "flips a checkbox and moves the radio selection before onClicked",
+          "duration": 2.153542000000016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["clicking an item"],
+          "fullName": "clicking an item builds Chrome's OnClickData",
+          "status": "passed",
+          "title": "builds Chrome's OnClickData",
+          "duration": 1.1088330000000042,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630991386,
+      "endTime": 1792630991409.109,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-context-menu-model.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 accepts a package signed by the key its id is derived from",
+          "status": "passed",
+          "title": "accepts a package signed by the key its id is derived from",
+          "duration": 17.166791999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 accepts ECDSA developer keys alongside other valid proofs",
+          "status": "passed",
+          "title": "accepts ECDSA developer keys alongside other valid proofs",
+          "duration": 31.092916999999943,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 rejects a package whose archive changed after signing",
+          "status": "passed",
+          "title": "rejects a package whose archive changed after signing",
+          "duration": 4.035499999999956,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 rejects a package for a different extension id",
+          "status": "passed",
+          "title": "rejects a package for a different extension id",
+          "duration": 2.2616670000006707,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 rejects a package that claims an id but is signed only by another key",
+          "status": "passed",
+          "title": "rejects a package that claims an id but is signed only by another key",
+          "duration": 1.3215000000000146,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 rejects any proof that fails, even when the developer proof is valid",
+          "status": "passed",
+          "title": "rejects any proof that fails, even when the developer proof is valid",
+          "duration": 6.57208399999945,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 requires the Chrome Web Store publisher proof for store installs",
+          "status": "passed",
+          "title": "requires the Chrome Web Store publisher proof for store installs",
+          "duration": 3.262457999999242,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["verifyCrx3"],
+          "fullName": "verifyCrx3 rejects files that are not CRX3",
+          "status": "passed",
+          "title": "rejects files that are not CRX3",
+          "duration": 0.8165420000004815,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630975771,
+      "endTime": 1792630975837.8167,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-crx.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["clearBrowserExtensionSessionData"],
+          "fullName": "clearBrowserExtensionSessionData clears chrome.storage through a hidden page of the loaded extension, then its origin's data",
+          "status": "passed",
+          "title": "clears chrome.storage through a hidden page of the loaded extension, then its origin's data",
+          "duration": 4.239249999999629,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["clearBrowserExtensionSessionData"],
+          "fullName": "clearBrowserExtensionSessionData deletes chrome.storage.local of an unloaded extension unless this run opened it",
+          "status": "passed",
+          "title": "deletes chrome.storage.local of an unloaded extension unless this run opened it",
+          "duration": 99.02016600000024,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["clearBrowserExtensionSessionData"],
+          "fullName": "clearBrowserExtensionSessionData touches nothing for an id that is not a Chrome extension id",
+          "status": "passed",
+          "title": "touches nothing for an id that is not a Chrome extension id",
+          "duration": 5.500708000000486,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["removeUninstalledBrowserExtensionData"],
+          "fullName": "removeUninstalledBrowserExtensionData deletes only the storage folders of extensions that are no longer installed",
+          "status": "passed",
+          "title": "deletes only the storage folders of extensions that are no longer installed",
+          "duration": 192.63429200000064,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["removeUninstalledBrowserExtensionData"],
+          "fullName": "removeUninstalledBrowserExtensionData does nothing for an in-memory session or a partition without the folder",
+          "status": "passed",
+          "title": "does nothing for an in-memory session or a partition without the folder",
+          "duration": 49.36162500000046,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["removeUninstalledBrowserExtensionData"],
+          "fullName": "removeUninstalledBrowserExtensionData forgets this profile's saved grants and sync items of uninstalled extensions",
+          "status": "passed",
+          "title": "forgets this profile's saved grants and sync items of uninstalled extensions",
+          "duration": 148.34912499999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630990703,
+      "endTime": 1792630991203.349,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-data-removal.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs lists every unloaded page of the caller’s profile after the loaded tabs, with a stable id",
+          "status": "passed",
+          "title": "lists every unloaded page of the caller’s profile after the loaded tabs, with a stable id",
+          "duration": 19.89495800000077,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs hides url and title without the tabs permission or a host permission",
+          "status": "passed",
+          "title": "hides url and title without the tabs permission or a host permission",
+          "duration": 1.4788750000006985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs shows url and title once the user grants an optional permission in this profile",
+          "status": "passed",
+          "title": "shows url and title once the user grants an optional permission in this profile",
+          "duration": 0.5576249999994616,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs activates through the renderer, then is replaced by the loaded guest",
+          "status": "passed",
+          "title": "activates through the renderer, then is replaced by the loaded guest",
+          "duration": 4.797333000000435,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs announces a page that was never listed as a new tab",
+          "status": "passed",
+          "title": "announces a page that was never listed as a new tab",
+          "duration": 1.9553750000013679,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs closes through the renderer",
+          "status": "passed",
+          "title": "closes through the renderer",
+          "duration": 1.7261670000007143,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs does not list a closed page until the session save drops it, nor an evicted one after",
+          "status": "passed",
+          "title": "does not list a closed page until the session save drops it, nor an evicted one after",
+          "duration": 2.456000000000131,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs reports a discarded tab closed once, when the session save drops its page",
+          "status": "passed",
+          "title": "reports a discarded tab closed once, when the session save drops its page",
+          "duration": 0.41604200000074343,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs sends only the keys that changed in onUpdated",
+          "status": "passed",
+          "title": "sends only the keys that changed in onUpdated",
+          "duration": 1.5721250000005966,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs updates the active tab of the caller's window when no tab id is given",
+          "status": "passed",
+          "title": "updates the active tab of the caller's window when no tab id is given",
+          "duration": 1.4824169999992591,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["restored browser pages without a guest are discarded tabs"],
+          "fullName": "restored browser pages without a guest are discarded tabs uses the preload's first synthetic id",
+          "status": "passed",
+          "title": "uses the preload's first synthetic id",
+          "duration": 0.6303749999988213,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630990662,
+      "endTime": 1792630990699.6304,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-discarded-tabs.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["declarativeNetRequest frame state"],
+          "fullName": "declarativeNetRequest frame state lets an allowAllRequests page and its frames load everything",
+          "status": "passed",
+          "title": "lets an allowAllRequests page and its frames load everything",
+          "duration": 8.1140419999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest frame state"],
+          "fullName": "declarativeNetRequest frame state forgets the old document's frames when the main frame commits elsewhere",
+          "status": "passed",
+          "title": "forgets the old document's frames when the main frame commits elsewhere",
+          "duration": 0.8609999999998763,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest frame state"],
+          "fullName": "declarativeNetRequest frame state tracks top origins without an engine and resolves tab ids once per document",
+          "status": "passed",
+          "title": "tracks top origins without an engine and resolves tab ids once per document",
+          "duration": 1.4267909999998665,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630996552,
+      "endTime": 1792630996562.4268,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-dnr-frames.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["declarativeNetRequest matched rules"],
+          "fullName": "declarativeNetRequest matched rules counts actions but not allows, per tab, and shows the count only when displayed",
+          "status": "passed",
+          "title": "counts actions but not allows, per tab, and shows the count only when displayed",
+          "duration": 3.1528339999999844,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest matched rules"],
+          "fullName": "declarativeNetRequest matched rules starts a tab over at each document, keeping the navigation's own matches",
+          "status": "passed",
+          "title": "starts a tab over at each document, keeping the navigation's own matches",
+          "duration": 0.43775000000005093,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest matched rules"],
+          "fullName": "declarativeNetRequest matched rules filters by tab and time, and drops matches outside tabs after five minutes",
+          "status": "passed",
+          "title": "filters by tab and time, and drops matches outside tabs after five minutes",
+          "duration": 4.092250000000149,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest matched rules"],
+          "fullName": "declarativeNetRequest matched rules keeps no rule list for extensions that cannot read it",
+          "status": "passed",
+          "title": "keeps no rule list for extensions that cannot read it",
+          "duration": 0.16808399999990797,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest matched rules"],
+          "fullName": "declarativeNetRequest matched rules lets the extension adjust the count, never below zero",
+          "status": "passed",
+          "title": "lets the extension adjust the count, never below zero",
+          "duration": 0.11999999999989086,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630999778,
+      "endTime": 1792630999786.168,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-dnr-matched-rules.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers does no work in a session whose extensions have no rules",
+          "status": "passed",
+          "title": "does no work in a session whose extensions have no rules",
+          "duration": 19.847333000005165,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers blocks, redirects, upgrades and allows page requests",
+          "status": "passed",
+          "title": "blocks, redirects, upgrades and allows page requests",
+          "duration": 104.8636669999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers leaves Orca's own requests, the Web Store and extension URLs alone",
+          "status": "passed",
+          "title": "leaves Orca's own requests, the Web Store and extension URLs alone",
+          "duration": 8.534749999998894,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers redirects only with host access to the request",
+          "status": "passed",
+          "title": "redirects only with host access to the request",
+          "duration": 7.612042000000656,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers holds requests until the rules have loaded",
+          "status": "passed",
+          "title": "holds requests until the rules have loaded",
+          "duration": 16.425458999998227,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers holds requests at startup until enabled blockers have loaded",
+          "status": "passed",
+          "title": "holds requests at startup until enabled blockers have loaded",
+          "duration": 16.070291999996698,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers modifies request headers, then response headers once they arrive",
+          "status": "passed",
+          "title": "modifies request headers, then response headers once they arrive",
+          "duration": 25.403291999995417,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers blocks on response header conditions at onHeadersReceived",
+          "status": "passed",
+          "title": "blocks on response header conditions at onHeadersReceived",
+          "duration": 13.021166999998968,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers keeps allowAllRequests that matched on the navigation method or response headers",
+          "status": "passed",
+          "title": "keeps allowAllRequests that matched on the navigation method or response headers",
+          "duration": 30.5344169999953,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["declarativeNetRequest in Orca request handlers"],
+          "fullName": "declarativeNetRequest in Orca request handlers shows blocked requests on the tab's badge once asked, and restarts it per document",
+          "status": "passed",
+          "title": "shows blocked requests on the tab's badge once asked, and restarts it per document",
+          "duration": 128.9936250000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631005095,
+      "endTime": 1792631005466.9937,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-dnr-requests.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["store updates that ask for more"],
+          "fullName": "store updates that ask for more checks nothing while extensions are switched off",
+          "status": "passed",
+          "title": "checks nothing while extensions are switched off",
+          "duration": 51.73616600000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store updates that ask for more"],
+          "fullName": "store updates that ask for more applies an update whose additions carry no warning",
+          "status": "passed",
+          "title": "applies an update whose additions carry no warning",
+          "duration": 51.61512500000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store updates that ask for more"],
+          "fullName": "store updates that ask for more holds an update with new warnings and records only the new ones",
+          "status": "passed",
+          "title": "holds an update with new warnings and records only the new ones",
+          "duration": 31.830332999999882,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store updates that ask for more"],
+          "fullName": "store updates that ask for more asks about only the new access, then installs exactly the held package",
+          "status": "passed",
+          "title": "asks about only the new access, then installs exactly the held package",
+          "duration": 50.742166,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store updates that ask for more"],
+          "fullName": "store updates that ask for more keeps the update held when the user declines",
+          "status": "passed",
+          "title": "keeps the update held when the user declines",
+          "duration": 1.751459000000068,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store updates that ask for more"],
+          "fullName": "store updates that ask for more refuses a package that changed since it was held",
+          "status": "passed",
+          "title": "refuses a package that changed since it was held",
+          "duration": 2.6738750000004075,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630991393,
+      "endTime": 1792630991582.6738,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-held-updates.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["BrowserExtensionInstallStore"],
+          "fullName": "BrowserExtensionInstallStore persists the installed list across instances",
+          "status": "passed",
+          "title": "persists the installed list across instances",
+          "duration": 18.480665999999474,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["BrowserExtensionInstallStore"],
+          "fullName": "BrowserExtensionInstallStore deletes the folder of a store install but never an unpacked folder",
+          "status": "passed",
+          "title": "deletes the folder of a store install but never an unpacked folder",
+          "duration": 40.709790999997495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["BrowserExtensionInstallStore"],
+          "fullName": "BrowserExtensionInstallStore refuses install directories that could escape the root",
+          "status": "passed",
+          "title": "refuses install directories that could escape the root",
+          "duration": 0.9557909999966796,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["readBrowserExtensionManifest"],
+          "fullName": "readBrowserExtensionManifest localizes the name, splits host permissions and finds the options page and icon",
+          "status": "passed",
+          "title": "localizes the name, splits host permissions and finds the options page and icon",
+          "duration": 8.954709000001458,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["readBrowserExtensionManifest"],
+          "fullName": "readBrowserExtensionManifest reads icons only from inside the extension folder",
+          "status": "passed",
+          "title": "reads icons only from inside the extension folder",
+          "duration": 2.4880840000005264,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630988587,
+      "endTime": 1792630988658.488,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-install-store.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["extension load directories"],
+          "fullName": "extension load directories derives ids the way Chromium does from a manifest key",
+          "status": "passed",
+          "title": "derives ids the way Chromium does from a manifest key",
+          "duration": 13.556042000000161,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension load directories"],
+          "fullName": "extension load directories wraps a store install in place and rewrites it when the shim changes",
+          "status": "passed",
+          "title": "wraps a store install in place and rewrites it when the shim changes",
+          "duration": 160.03125,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension load directories"],
+          "fullName": "extension load directories loads an unpacked folder from a stable Orca copy and never touches the folder",
+          "status": "passed",
+          "title": "loads an unpacked folder from a stable Orca copy and never touches the folder",
+          "duration": 530.1751669999976,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension load directories"],
+          "fullName": "extension load directories runs Orca’s content script first in every isolated-world content script",
+          "status": "passed",
+          "title": "runs Orca’s content script first in every isolated-world content script",
+          "duration": 194.53129199999967,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension load directories"],
+          "fullName": "extension load directories keeps the id an unpacked folder pins with its own key",
+          "status": "passed",
+          "title": "keeps the id an unpacked folder pins with its own key",
+          "duration": 750.5601669999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension load directories"],
+          "fullName": "extension load directories loads an unpacked folder's own manifest even when it ships Orca's backup",
+          "status": "passed",
+          "title": "loads an unpacked folder's own manifest even when it ships Orca's backup",
+          "duration": 401.64258300000074,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension load directories"],
+          "fullName": "extension load directories refuses Manifest V2",
+          "status": "passed",
+          "title": "refuses Manifest V2",
+          "duration": 33.02216699999917,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630989163,
+      "endTime": 1792630991247.0222,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-load-directory.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["removeBrowserExtension"],
+          "fullName": "removeBrowserExtension clears its data in every profile session before unloading it, then forgets Orca's record",
+          "status": "passed",
+          "title": "clears its data in every profile session before unloading it, then forgets Orca's record",
+          "duration": 3.4585000000001855,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["removeBrowserExtension"],
+          "fullName": "removeBrowserExtension refuses while an install or update of the same extension is running",
+          "status": "passed",
+          "title": "refuses while an install or update of the same extension is running",
+          "duration": 1.008874999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["removeBrowserExtension"],
+          "fullName": "removeBrowserExtension still removes the extension when one profile cannot clear its data",
+          "status": "passed",
+          "title": "still removes the extension when one profile cannot clear its data",
+          "duration": 0.4037089999997079,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["addUnpackedBrowserExtension"],
+          "fullName": "addUnpackedBrowserExtension refuses a folder whose id is a store install before loading or copying anything",
+          "status": "passed",
+          "title": "refuses a folder whose id is a store install before loading or copying anything",
+          "duration": 0.23837500000036016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["addUnpackedBrowserExtension"],
+          "fullName": "addUnpackedBrowserExtension loads and records a folder with a new id",
+          "status": "passed",
+          "title": "loads and records a folder with a new id",
+          "duration": 0.9251250000002074,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["addUnpackedBrowserExtension"],
+          "fullName": "addUnpackedBrowserExtension adds an installed folder to another profile without re-copying the copy others run",
+          "status": "passed",
+          "title": "adds an installed folder to another profile without re-copying the copy others run",
+          "duration": 0.19750000000021828,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["reloadUnpackedBrowserExtension"],
+          "fullName": "reloadUnpackedBrowserExtension refuses while a removal of the same extension is running, so it cannot restore it",
+          "status": "passed",
+          "title": "refuses while a removal of the same extension is running, so it cannot restore it",
+          "duration": 0.2335840000000644,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630994448,
+      "endTime": 1792630994454.2336,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-management.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern <all_urls> vs https://example.com/a → true",
+          "status": "passed",
+          "title": "<all_urls> vs https://example.com/a → true",
+          "duration": 13.011583999999857,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern <all_urls> vs chrome-extension://abc/page.html → false",
+          "status": "passed",
+          "title": "<all_urls> vs chrome-extension://abc/page.html → false",
+          "duration": 0.14274999999997817,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern *://*/* vs http://example.com/ → true",
+          "status": "passed",
+          "title": "*://*/* vs http://example.com/ → true",
+          "duration": 1.5143749999999727,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern *://*/* vs file:///tmp/a.html → false",
+          "status": "passed",
+          "title": "*://*/* vs file:///tmp/a.html → false",
+          "duration": 0.2211250000000291,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern https://*.example.com/* vs https://example.com/x → true",
+          "status": "passed",
+          "title": "https://*.example.com/* vs https://example.com/x → true",
+          "duration": 0.11095799999998235,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern https://*.example.com/* vs https://deep.sub.example.com/x → true",
+          "status": "passed",
+          "title": "https://*.example.com/* vs https://deep.sub.example.com/x → true",
+          "duration": 0.09295799999995324,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern https://*.example.com/* vs https://notexample.com/x → false",
+          "status": "passed",
+          "title": "https://*.example.com/* vs https://notexample.com/x → false",
+          "duration": 0.058250000000043656,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern https://example.com/app/* vs https://example.com/app/login?next=1 → true",
+          "status": "passed",
+          "title": "https://example.com/app/* vs https://example.com/app/login?next=1 → true",
+          "duration": 1.3353329999999914,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern https://example.com/app/* vs https://example.com/other → false",
+          "status": "passed",
+          "title": "https://example.com/app/* vs https://example.com/other → false",
+          "duration": 0.1734590000000935,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern https://example.com/* vs http://example.com/ → false",
+          "status": "passed",
+          "title": "https://example.com/* vs http://example.com/ → false",
+          "duration": 17.85437499999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesExtensionMatchPattern"],
+          "fullName": "matchesExtensionMatchPattern not a pattern vs https://example.com/ → false",
+          "status": "passed",
+          "title": "not a pattern vs https://example.com/ → false",
+          "duration": 0.13599999999996726,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631000708,
+      "endTime": 1792631000743.136,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-match-pattern.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["native host message framing"],
+          "fullName": "native host message framing prefixes the UTF-8 byte length, not the string length, in native byte order",
+          "status": "passed",
+          "title": "prefixes the UTF-8 byte length, not the string length, in native byte order",
+          "duration": 35.719125000000076,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host message framing"],
+          "fullName": "native host message framing reassembles a message split across chunks, including inside the header and a character",
+          "status": "passed",
+          "title": "reassembles a message split across chunks, including inside the header and a character",
+          "duration": 0.9948329999999714,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host message framing"],
+          "fullName": "native host message framing delivers every message in one chunk, in order",
+          "status": "passed",
+          "title": "delivers every message in one chunk, in order",
+          "duration": 0.28549999999995634,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host message framing"],
+          "fullName": "native host message framing takes a message of exactly 1 MB and refuses one byte more without waiting for it",
+          "status": "passed",
+          "title": "takes a message of exactly 1 MB and refuses one byte more without waiting for it",
+          "duration": 2.6004169999998794,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host message framing"],
+          "fullName": "native host message framing stops at a message that is not JSON",
+          "status": "passed",
+          "title": "stops at a message that is not JSON",
+          "duration": 0.18658300000015515,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630997869,
+      "endTime": 1792630997909.6003,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-native-host-framing.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests accepts a Chrome manifest and refuses each field Chrome refuses",
+          "status": "passed",
+          "title": "accepts a Chrome manifest and refuses each field Chrome refuses",
+          "duration": 45.400000000000546,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests uses Chrome error strings for a bad name, a missing host and a forbidden extension",
+          "status": "passed",
+          "title": "uses Chrome error strings for a bad name, a missing host and a forbidden extension",
+          "duration": 1.8626670000003287,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests allows only the exact extension origin, with Chrome path patterns",
+          "status": "passed",
+          "title": "allows only the exact extension origin, with Chrome path patterns",
+          "duration": 1.5420830000002752,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests reads Orca, then Chrome and Chromium user and system folders, then other browsers on macOS",
+          "status": "passed",
+          "title": "reads Orca, then Chrome and Chromium user and system folders, then other browsers on macOS",
+          "duration": 0.4918340000003809,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests reads ~/.config (or XDG_CONFIG_HOME) and the system folders on Linux",
+          "status": "passed",
+          "title": "reads ~/.config (or XDG_CONFIG_HOME) and the system folders on Linux",
+          "duration": 0.8556660000003831,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests stops at the first usable manifest and falls through stale or forbidding ones",
+          "status": "passed",
+          "title": "stops at the first usable manifest and falls through stale or forbidding ones",
+          "duration": 0.2916660000000775,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests refuses a relative host path outside Windows",
+          "status": "passed",
+          "title": "refuses a relative host path outside Windows",
+          "duration": 1.3935840000003736,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests reads the registry HKCU before HKLM, 32-bit view first, and resolves a relative path on Windows",
+          "status": "passed",
+          "title": "reads the registry HKCU before HKLM, 32-bit view first, and resolves a relative path on Windows",
+          "duration": 0.6817499999997381,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging host manifests"],
+          "fullName": "native messaging host manifests looks in Orca’s own folder first on Windows and ignores a relative registry value",
+          "status": "passed",
+          "title": "looks in Orca’s own folder first on Windows and ignores a relative registry value",
+          "duration": 0.5208339999999225,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630996184,
+      "endTime": 1792630996237.5208,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-native-host-lookup.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["native host process"],
+          "fullName": "native host process round-trips messages and passes the origin as the first argument",
+          "status": "passed",
+          "title": "round-trips messages and passes the origin as the first argument",
+          "duration": 713.5234579999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host process"],
+          "fullName": "native host process delivers the last reply, then reports the exit as Chrome does",
+          "status": "failed",
+          "title": "delivers the last reply, then reports the exit as Chrome does",
+          "duration": 1024.3072499999998,
+          "failureMessages": [
+            "Error: expected [] to deeply equal [ 'Native host has exited.' ]\n    at Proxy.__VITEST_POLL_CHAIN__ (file:///Users/kelvinamoaba/Library/pnpm/store/v11/links/@/vitest/5.0.5/0f86ba2ff51ab27e1befee3d6cb88221d44b69491a64b2c291dcf535a003bdc4/node_modules/vitest/dist/chunks/index.aTZaPVhf.js:7579:47)\n    at /Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-native-host-process.test.ts:98:42\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/kelvinamoaba/Library/pnpm/store/v11/links/@/vitest/5.0.5/0f86ba2ff51ab27e1befee3d6cb88221d44b69491a64b2c291dcf535a003bdc4/node_modules/vitest/dist/chunks/run.BPv-BBRv.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host process"],
+          "fullName": "native host process rejects with Chrome’s start error when the host cannot run",
+          "status": "passed",
+          "title": "rejects with Chrome’s start error when the host cannot run",
+          "duration": 7.530624999999418,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host process"],
+          "fullName": "native host process kills a host that ignores its closed stdin once the grace period ends",
+          "status": "passed",
+          "title": "kills a host that ignores its closed stdin once the grace period ends",
+          "duration": 3750.069958,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host process"],
+          "fullName": "native host process treats a message over 1 MB as a communication error and kills the host",
+          "status": "failed",
+          "title": "treats a message over 1 MB as a communication error and kills the host",
+          "duration": 1017.8702090000006,
+          "failureMessages": [
+            "Error: expected [] to deeply equal [ Array(1) ]\n    at Proxy.__VITEST_POLL_CHAIN__ (file:///Users/kelvinamoaba/Library/pnpm/store/v11/links/@/vitest/5.0.5/0f86ba2ff51ab27e1befee3d6cb88221d44b69491a64b2c291dcf535a003bdc4/node_modules/vitest/dist/chunks/index.aTZaPVhf.js:7579:47)\n    at /Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-native-host-process.test.ts:125:8\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/kelvinamoaba/Library/pnpm/store/v11/links/@/vitest/5.0.5/0f86ba2ff51ab27e1befee3d6cb88221d44b69491a64b2c291dcf535a003bdc4/node_modules/vitest/dist/chunks/run.BPv-BBRv.js:2801:20"
+          ],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native host process"],
+          "fullName": "native host process forwards a bounded amount of stderr to Orca’s log",
+          "status": "passed",
+          "title": "forwards a bounded amount of stderr to Orca’s log",
+          "duration": 472.7660419999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630975986,
+      "endTime": 1792630982974.766,
+      "status": "failed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-native-host-process.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports needs the nativeMessaging permission",
+          "status": "passed",
+          "title": "needs the nativeMessaging permission",
+          "duration": 25.909999999999854,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports reports lookup failures with Chrome’s messages and starts nothing",
+          "status": "passed",
+          "title": "reports lookup failures with Chrome’s messages and starts nothing",
+          "duration": 2.814416999997775,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports routes a worker port to that worker, keeps it alive while open, and kills the host on disconnect",
+          "status": "passed",
+          "title": "routes a worker port to that worker, keeps it alive while open, and kills the host on disconnect",
+          "duration": 3.58466700000281,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports tells the page frame when the host exits, and only that frame",
+          "status": "passed",
+          "title": "tells the page frame when the host exits, and only that frame",
+          "duration": 0.5909169999977166,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports kills a page’s hosts when its frame navigates or its contents are destroyed",
+          "status": "passed",
+          "title": "kills a page’s hosts when its frame navigates or its contents are destroyed",
+          "duration": 0.4349999999976717,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports kills the hosts of a stopped worker and of an unloaded (disabled, removed) extension",
+          "status": "passed",
+          "title": "kills the hosts of a stopped worker and of an unloaded (disabled, removed) extension",
+          "duration": 0.47820800000044983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports starts no host when its extension unloads during the host lookup",
+          "status": "passed",
+          "title": "starts no host when its extension unloads during the host lookup",
+          "duration": 0.6705420000034792,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports sends one message, returns the first reply and closes the host",
+          "status": "passed",
+          "title": "sends one message, returns the first reply and closes the host",
+          "duration": 188.3257080000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["native messaging ports"],
+          "fullName": "native messaging ports rejects a one-shot message when the host exits without replying or its owner goes away",
+          "status": "passed",
+          "title": "rejects a one-shot message when the host exits without replying or its owner goes away",
+          "duration": 166.25004099999933,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630989037,
+      "endTime": 1792630989426.25,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-native-ports.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["permission request planning"],
+          "fullName": "permission request planning prompts only for what is optional and not yet granted",
+          "status": "passed",
+          "title": "prompts only for what is optional and not yet granted",
+          "duration": 1.2744580000003225,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["permission request planning"],
+          "fullName": "permission request planning refuses anything the manifest does not list",
+          "status": "passed",
+          "title": "refuses anything the manifest does not list",
+          "duration": 1.500666999999794,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["permission request planning"],
+          "fullName": "permission request planning treats optional host patterns as covering narrower requests",
+          "status": "passed",
+          "title": "treats optional host patterns as covering narrower requests",
+          "duration": 0.44399999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["permission request planning"],
+          "fullName": "permission request planning never removes required permissions and removes only what was granted",
+          "status": "passed",
+          "title": "never removes required permissions and removes only what was granted",
+          "duration": 0.1990840000003118,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["contains and getAll"],
+          "fullName": "contains and getAll answers from required plus granted permissions",
+          "status": "passed",
+          "title": "answers from required plus granted permissions",
+          "duration": 0.22800000000006548,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["contains and getAll"],
+          "fullName": "contains and getAll reads MV2 host entries out of permissions",
+          "status": "passed",
+          "title": "reads MV2 host entries out of permissions",
+          "duration": 0.15537499999982174,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers <all_urls> covers https://a.test/*: true",
+          "status": "passed",
+          "title": "<all_urls> covers https://a.test/*: true",
+          "duration": 0.08037500000000364,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers *://*/* covers https://a.test/x: true",
+          "status": "passed",
+          "title": "*://*/* covers https://a.test/x: true",
+          "duration": 0.0648750000000291,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers https://*.a.test/* covers https://b.a.test/*: true",
+          "status": "passed",
+          "title": "https://*.a.test/* covers https://b.a.test/*: true",
+          "duration": 0.06962500000008731,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers https://*.a.test/* covers https://a.test/*: true",
+          "status": "passed",
+          "title": "https://*.a.test/* covers https://a.test/*: true",
+          "duration": 0.08995899999990797,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers https://a.test/* covers https://*.a.test/*: false",
+          "status": "passed",
+          "title": "https://a.test/* covers https://*.a.test/*: false",
+          "duration": 0.05687500000021828,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers https://a.test/x/* covers https://a.test/y: false",
+          "status": "passed",
+          "title": "https://a.test/x/* covers https://a.test/y: false",
+          "duration": 0.18208300000014788,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers http://*/* covers https://a.test/*: false",
+          "status": "passed",
+          "title": "http://*/* covers https://a.test/*: false",
+          "duration": 0.05229199999985212,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["originPatternCovers"],
+          "fullName": "originPatternCovers https://a.test/* covers <all_urls>: false",
+          "status": "passed",
+          "title": "https://a.test/* covers <all_urls>: false",
+          "duration": 0.04591699999991761,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630995108,
+      "endTime": 1792630995112.1821,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-permission-grants.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["summarizeManifestPermissions"],
+          "fullName": "summarizeManifestPermissions splits API permissions from every place a manifest grants host access",
+          "status": "passed",
+          "title": "splits API permissions from every place a manifest grants host access",
+          "duration": 1.1805420000000595,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["summarizeManifestPermissions"],
+          "fullName": "summarizeManifestPermissions treats a missing or malformed manifest as asking for nothing",
+          "status": "passed",
+          "title": "treats a missing or malformed manifest as asking for nothing",
+          "duration": 0.17300000000000182,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["permission comparisons"],
+          "fullName": "permission comparisons matches the same access listed in a different order",
+          "status": "passed",
+          "title": "matches the same access listed in a different order",
+          "duration": 0.18091600000002472,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["permission comparisons"],
+          "fullName": "permission comparisons flags a download that asks for more or different access than approved",
+          "status": "passed",
+          "title": "flags a download that asks for more or different access than approved",
+          "duration": 0.11862499999983811,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631001280,
+      "endTime": 1792631001282.181,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-permission-summary.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["action popup size"],
+          "fullName": "action popup size fits {\"width\":360,\"height\":600} into Chrome limits as {\"width\":360,\"height\":600}",
+          "status": "passed",
+          "title": "fits {\"width\":360,\"height\":600} into Chrome limits as {\"width\":360,\"height\":600}",
+          "duration": 4.393916999999874,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup size"],
+          "fullName": "action popup size fits {\"width\":10,\"height\":0} into Chrome limits as {\"width\":25,\"height\":25}",
+          "status": "passed",
+          "title": "fits {\"width\":10,\"height\":0} into Chrome limits as {\"width\":25,\"height\":25}",
+          "duration": 0.41537500000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup size"],
+          "fullName": "action popup size fits {\"width\":2000,\"height\":1200} into Chrome limits as {\"width\":800,\"height\":600}",
+          "status": "passed",
+          "title": "fits {\"width\":2000,\"height\":1200} into Chrome limits as {\"width\":800,\"height\":600}",
+          "duration": 0.7518340000001444,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup size"],
+          "fullName": "action popup size fits {\"width\":null,\"height\":300.6} into Chrome limits as {\"width\":25,\"height\":301}",
+          "status": "passed",
+          "title": "fits {\"width\":null,\"height\":300.6} into Chrome limits as {\"width\":25,\"height\":301}",
+          "duration": 0.6530829999999241,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup placement"],
+          "fullName": "action popup placement maps a CSS-pixel button rect to the screen through the window and zoom",
+          "status": "passed",
+          "title": "maps a CSS-pixel button rect to the screen through the window and zoom",
+          "duration": 0.8797919999999522,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup placement"],
+          "fullName": "action popup placement sits under the button with right edges aligned",
+          "status": "passed",
+          "title": "sits under the button with right edges aligned",
+          "duration": 0.8077080000000478,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup placement"],
+          "fullName": "action popup placement stays inside the work area near its left edge",
+          "status": "passed",
+          "title": "stays inside the work area near its left edge",
+          "duration": 0.4030410000000302,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup placement"],
+          "fullName": "action popup placement flips above the button when there is no room below",
+          "status": "passed",
+          "title": "flips above the button when there is no room below",
+          "duration": 0.37762500000008004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["action popup placement"],
+          "fullName": "action popup placement clamps to the work area when it fits neither above nor below",
+          "status": "passed",
+          "title": "clamps to the work area when it fits neither above nor below",
+          "duration": 0.15770799999995688,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631001222,
+      "endTime": 1792631001232.1577,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-popup-geometry.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["browser extension data per Orca profile"],
+          "fullName": "browser extension data per Orca profile keeps one Orca profile’s \"default\" browser profile data from another",
+          "status": "passed",
+          "title": "keeps one Orca profile’s \"default\" browser profile data from another",
+          "duration": 2879.581917,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631000489,
+      "endTime": 1792631003368.582,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-profile-data-directory.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["BrowserExtensionProfileStateStore"],
+          "fullName": "BrowserExtensionProfileStateStore keeps each profile and extension apart and survives a restart",
+          "status": "passed",
+          "title": "keeps each profile and extension apart and survives a restart",
+          "duration": 241.91170799999963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["BrowserExtensionProfileStateStore"],
+          "fullName": "BrowserExtensionProfileStateStore forgets a removed extension everywhere and a deleted profile entirely",
+          "status": "passed",
+          "title": "forgets a removed extension everywhere and a deleted profile entirely",
+          "duration": 14.863916000000245,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630984565,
+      "endTime": 1792630984821.864,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-profile-state-store.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["decideRuntimeLifecycleEvents"],
+          "fullName": "decideRuntimeLifecycleEvents installs on the first load in a profile, with no onStartup even at launch",
+          "status": "passed",
+          "title": "installs on the first load in a profile, with no onStartup even at launch",
+          "duration": 2.52533399999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["decideRuntimeLifecycleEvents"],
+          "fullName": "decideRuntimeLifecycleEvents fires only onStartup when an installed extension loads at launch unchanged",
+          "status": "passed",
+          "title": "fires only onStartup when an installed extension loads at launch unchanged",
+          "duration": 0.48533299999962765,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["decideRuntimeLifecycleEvents"],
+          "fullName": "decideRuntimeLifecycleEvents reports a new version, or any reload, as an update with the previous version",
+          "status": "passed",
+          "title": "reports a new version, or any reload, as an update with the previous version",
+          "duration": 0.5232499999992797,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["decideRuntimeLifecycleEvents"],
+          "fullName": "decideRuntimeLifecycleEvents reports a new Chromium under the same extension version as chrome_update",
+          "status": "passed",
+          "title": "reports a new Chromium under the same extension version as chrome_update",
+          "duration": 0.14366700000027777,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fireRuntimeLifecycleEvents"],
+          "fullName": "fireRuntimeLifecycleEvents records what it fired so the same launch never fires it twice",
+          "status": "passed",
+          "title": "records what it fired so the same launch never fires it twice",
+          "duration": 280.52033400000073,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fireRuntimeLifecycleEvents"],
+          "fullName": "fireRuntimeLifecycleEvents keeps each profile apart and is cleared with the extension",
+          "status": "passed",
+          "title": "keeps each profile apart and is cleared with the extension",
+          "duration": 1.076333999999406,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["fireRuntimeLifecycleEvents"],
+          "fullName": "fireRuntimeLifecycleEvents records but raises nothing for an extension without a service worker",
+          "status": "passed",
+          "title": "records but raises nothing for an extension without a service worker",
+          "duration": 7.232250000000022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630997356,
+      "endTime": 1792630997648.2322,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-runtime-lifecycle.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["browser extension session loader"],
+          "fullName": "browser extension session loader registers only the frame preload, never a service-worker preload (electron#52310)",
+          "status": "passed",
+          "title": "registers only the frame preload, never a service-worker preload (electron#52310)",
+          "duration": 10.057583000001614,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension session loader"],
+          "fullName": "browser extension session loader drops the cached worker registration only when the worker scripts changed",
+          "status": "passed",
+          "title": "drops the cached worker registration only when the worker scripts changed",
+          "duration": 8.834791000001132,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension session loader"],
+          "fullName": "browser extension session loader always re-registers an unpacked worker, whose folder may have changed",
+          "status": "passed",
+          "title": "always re-registers an unpacked worker, whose folder may have changed",
+          "duration": 0.3324999999967986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension session loader"],
+          "fullName": "browser extension session loader raises lifecycle events only once Chromium has registered the dropped worker again",
+          "status": "passed",
+          "title": "raises lifecycle events only once Chromium has registered the dropped worker again",
+          "duration": 24.450000000000728,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension session loader"],
+          "fullName": "browser extension session loader waits for the worker to register again after an unload, even with unchanged scripts",
+          "status": "passed",
+          "title": "waits for the worker to register again after an unload, even with unchanged scripts",
+          "duration": 74.47850000000108,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["browser extension session loader"],
+          "fullName": "browser extension session loader keeps the last load failure for Settings and clears it on the next good load",
+          "status": "passed",
+          "title": "keeps the last load failure for Settings and clears it on the next good load",
+          "duration": 90.89737500000047,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["switching the experimental setting while Orca runs"],
+          "fullName": "switching the experimental setting while Orca runs off unloads every extension and its preload; on wires the profile again",
+          "status": "passed",
+          "title": "off unloads every extension and its preload; on wires the profile again",
+          "duration": 20.33862500000032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["profile changes while startup loads are in flight"],
+          "fullName": "profile changes while startup loads are in flight a disable that finishes first stops the late startup load before it writes",
+          "status": "passed",
+          "title": "a disable that finishes first stops the late startup load before it writes",
+          "duration": 169.17224999999962,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["profile changes while startup loads are in flight"],
+          "fullName": "profile changes while startup loads are in flight an explicit load still in flight when extensions turn off fails and leaves nothing loaded",
+          "status": "passed",
+          "title": "an explicit load still in flight when extensions turn off fails and leaves nothing loaded",
+          "duration": 52.27399999999761,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["profile changes while startup loads are in flight"],
+          "fullName": "profile changes while startup loads are in flight profile delete purges saved data only after the startup loads stop writing",
+          "status": "passed",
+          "title": "profile delete purges saved data only after the startup loads stop writing",
+          "duration": 55.39287499999773,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["profile changes while startup loads are in flight"],
+          "fullName": "profile changes while startup loads are in flight profile delete purges saved data even when extensions never attached to it",
+          "status": "passed",
+          "title": "profile delete purges saved data even when extensions never attached to it",
+          "duration": 2.197833999998693,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630991745,
+      "endTime": 1792630992255.1978,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-session-loader.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["extension unload in an attached session"],
+          "fullName": "extension unload in an attached session drops action state set before any toolbar asked for it",
+          "status": "passed",
+          "title": "drops action state set before any toolbar asked for it",
+          "duration": 2.000250000000051,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["extension unload in an attached session"],
+          "fullName": "extension unload in an attached session revokes the extension's activeTab grants on that session's tabs only",
+          "status": "passed",
+          "title": "revokes the extension's activeTab grants on that session's tabs only",
+          "duration": 0.2327080000004571,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630999769,
+      "endTime": 1792630999771.2327,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-session-services.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["BrowserExtensionSyncStorageStore"],
+          "fullName": "BrowserExtensionSyncStorageStore keeps each profile and extension apart and survives a restart",
+          "status": "passed",
+          "title": "keeps each profile and extension apart and survives a restart",
+          "duration": 609.7259159999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["BrowserExtensionSyncStorageStore"],
+          "fullName": "BrowserExtensionSyncStorageStore forgets a removed extension in every profile and a deleted profile entirely",
+          "status": "passed",
+          "title": "forgets a removed extension in every profile and a deleted profile entirely",
+          "duration": 540.3753749999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630990047,
+      "endTime": 1792630991197.3755,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-sync-storage-store.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["where an extension tab goes when no workspace is active"],
+          "fullName": "where an extension tab goes when no workspace is active prefers the active page's workspace when that page is in the profile",
+          "status": "passed",
+          "title": "prefers the active page's workspace when that page is in the profile",
+          "duration": 1.6728750000002037,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["where an extension tab goes when no workspace is active"],
+          "fullName": "where an extension tab goes when no workspace is active otherwise uses any open tab in the profile, never another profile's workspace",
+          "status": "passed",
+          "title": "otherwise uses any open tab in the profile, never another profile's workspace",
+          "duration": 0.7406249999985448,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["where an extension tab goes when no workspace is active"],
+          "fullName": "where an extension tab goes when no workspace is active passes that workspace to the renderer as the fallback",
+          "status": "passed",
+          "title": "passes that workspace to the renderer as the fallback",
+          "duration": 0.8994999999995343,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["an extension tab opened while Orca starts"],
+          "fullName": "an extension tab opened while Orca starts waits for the window and its restored workspaces, then opens",
+          "status": "passed",
+          "title": "waits for the window and its restored workspaces, then opens",
+          "duration": 1.4695420000007289,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["an extension tab opened while Orca starts"],
+          "fullName": "an extension tab opened while Orca starts fails cleanly when the window never becomes ready",
+          "status": "passed",
+          "title": "fails cleanly when the window never becomes ready",
+          "duration": 3.2545420000005834,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631000755,
+      "endTime": 1792631000763.2546,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-tab-model.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["matchesOrcaTabQuery"],
+          "fullName": "matchesOrcaTabQuery answers the common \"active tab in my window\" query per caller window",
+          "status": "passed",
+          "title": "answers the common \"active tab in my window\" query per caller window",
+          "duration": 11.744542000000365,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesOrcaTabQuery"],
+          "fullName": "matchesOrcaTabQuery resolves WINDOW_ID_CURRENT and window types",
+          "status": "passed",
+          "title": "resolves WINDOW_ID_CURRENT and window types",
+          "duration": 0.45083400000021356,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesOrcaTabQuery"],
+          "fullName": "matchesOrcaTabQuery filters status and index, and never matches pinned or grouped tabs",
+          "status": "passed",
+          "title": "filters status and index, and never matches pinned or grouped tabs",
+          "duration": 0.29995800000006057,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesDiscardedTabNativeQuery"],
+          "fullName": "matchesDiscardedTabNativeQuery applies Electron's url and title patterns to the tab's saved address",
+          "status": "passed",
+          "title": "applies Electron's url and title patterns to the tab's saved address",
+          "duration": 4.066458000000239,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["matchesDiscardedTabNativeQuery"],
+          "fullName": "matchesDiscardedTabNativeQuery never matches a hidden url, sound or a mute",
+          "status": "passed",
+          "title": "never matches a hidden url, sound or a mute",
+          "duration": 36.38999999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630999075,
+      "endTime": 1792630999128.39,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-tab-query.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["an extension action run from a keyboard shortcut"],
+          "fullName": "an extension action run from a keyboard shortcut acts on the tab the key was pressed in, not another profile's active tab",
+          "status": "passed",
+          "title": "acts on the tab the key was pressed in, not another profile's active tab",
+          "duration": 4.783540999999786,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["an extension action run from a keyboard shortcut"],
+          "fullName": "an extension action run from a keyboard shortcut from a page that is no tab, uses the active tab only when it is in the caller's profile",
+          "status": "passed",
+          "title": "from a page that is no tab, uses the active tab only when it is in the caller's profile",
+          "duration": 1.6179999999994834,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["an extension action run from a keyboard shortcut"],
+          "fullName": "an extension action run from a keyboard shortcut opens the popup on the invoking tab's toolbar, and refuses in a popout that has none",
+          "status": "passed",
+          "title": "opens the popup on the invoking tab's toolbar, and refuses in a popout that has none",
+          "duration": 4.9465000000000146,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630999307,
+      "endTime": 1792630999318.9465,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-toolbar.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["withStaticWebAccessibleResources"],
+          "fullName": "withStaticWebAccessibleResources turns off dynamic URLs and keeps every other field",
+          "status": "passed",
+          "title": "turns off dynamic URLs and keeps every other field",
+          "duration": 7.268832999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["withStaticWebAccessibleResources"],
+          "fullName": "withStaticWebAccessibleResources leaves manifests without web-accessible resources unchanged",
+          "status": "passed",
+          "title": "leaves manifests without web-accessible resources unchanged",
+          "duration": 0.604082999999946,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["withPrivateFilesHiddenFromWebAccessibleResources"],
+          "fullName": "withPrivateFilesHiddenFromWebAccessibleResources turns a catch-all pattern into the package files minus the private ones",
+          "status": "passed",
+          "title": "turns a catch-all pattern into the package files minus the private ones",
+          "duration": 0.47450000000003456,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["withPrivateFilesHiddenFromWebAccessibleResources"],
+          "fullName": "withPrivateFilesHiddenFromWebAccessibleResources expands only patterns that reach a private file and keeps the rest as written",
+          "status": "passed",
+          "title": "expands only patterns that reach a private file and keeps the rest as written",
+          "duration": 0.47279199999991306,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["withPrivateFilesHiddenFromWebAccessibleResources"],
+          "fullName": "withPrivateFilesHiddenFromWebAccessibleResources leaves manifests whose patterns never reach a private file unchanged",
+          "status": "passed",
+          "title": "leaves manifests whose patterns never reach a private file unchanged",
+          "duration": 0.24737500000003365,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631001043,
+      "endTime": 1792631001052.473,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-web-accessible-resources.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame accepts the top frame of an Orca tab on the exact store origin",
+          "status": "passed",
+          "title": "accepts the top frame of an Orca tab on the exact store origin",
+          "duration": 5.620541999999659,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame refuses a look-alike host",
+          "status": "passed",
+          "title": "refuses a look-alike host",
+          "duration": 0.6347090000003845,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame refuses plain http",
+          "status": "passed",
+          "title": "refuses plain http",
+          "duration": 0.16904100000010658,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame refuses another port",
+          "status": "passed",
+          "title": "refuses another port",
+          "duration": 0.11620799999991505,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame refuses a subframe",
+          "status": "passed",
+          "title": "refuses a subframe",
+          "duration": 0.10758299999997689,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame refuses a non-guest window",
+          "status": "passed",
+          "title": "refuses a non-guest window",
+          "duration": 0.06279199999971752,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame refuses a session that runs no extensions",
+          "status": "passed",
+          "title": "refuses a session that runs no extensions",
+          "duration": 0.06183400000008987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame refuses a guest Orca does not own as a tab",
+          "status": "passed",
+          "title": "refuses a guest Orca does not own as a tab",
+          "duration": 0.06016700000009223,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["resolveChromeWebStoreFrame"],
+          "fullName": "resolveChromeWebStoreFrame stops being valid once the frame leaves the store",
+          "status": "passed",
+          "title": "stops being valid once the frame leaves the store",
+          "duration": 0.38420799999994415,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631002353,
+      "endTime": 1792631002360.3843,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-webstore-bridge-host.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin asks the user with the listing name, icon and access, then approves",
+          "status": "passed",
+          "title": "asks the user with the listing name, icon and access, then approves",
+          "duration": 10.602167000000918,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin refuses bad input without prompting",
+          "status": "passed",
+          "title": "refuses bad input without prompting",
+          "duration": 1.0870839999988675,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin refuses bad input without prompting",
+          "status": "passed",
+          "title": "refuses bad input without prompting",
+          "duration": 0.7069999999985157,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin refuses bad input without prompting",
+          "status": "passed",
+          "title": "refuses bad input without prompting",
+          "duration": 0.3640839999970922,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin refuses bad input without prompting",
+          "status": "passed",
+          "title": "refuses bad input without prompting",
+          "duration": 0.21537499999976717,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin reports an extension already on in this profile",
+          "status": "passed",
+          "title": "reports an extension already on in this profile",
+          "duration": 0.193875000000844,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin separates a disallowed icon URL from an icon that failed to load",
+          "status": "passed",
+          "title": "separates a disallowed icon URL from an icon that failed to load",
+          "duration": 0.7742499999985739,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin reports user_cancelled when the user declines",
+          "status": "passed",
+          "title": "reports user_cancelled when the user declines",
+          "duration": 0.36837499999819556,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin cancels when the tab navigated away while the prompt was open",
+          "status": "passed",
+          "title": "cancels when the tab navigated away while the prompt was open",
+          "duration": 1.4017910000002303,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.begin"],
+          "fullName": "ChromeWebStoreInstallFlow.begin refuses a second begin while the first prompt is open",
+          "status": "passed",
+          "title": "refuses a second begin while the first prompt is open",
+          "duration": 53.033416999998735,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.complete"],
+          "fullName": "ChromeWebStoreInstallFlow.complete installs into the approving profile with the approved access, then raises onInstalled",
+          "status": "passed",
+          "title": "installs into the approving profile with the approved access, then raises onInstalled",
+          "duration": 1.1314170000005106,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.complete"],
+          "fullName": "ChromeWebStoreInstallFlow.complete consumes the approval once",
+          "status": "passed",
+          "title": "consumes the approval once",
+          "duration": 0.7398329999996349,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.complete"],
+          "fullName": "ChromeWebStoreInstallFlow.complete refuses an approval that expired",
+          "status": "passed",
+          "title": "refuses an approval that expired",
+          "duration": 0.23062500000014552,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.complete"],
+          "fullName": "ChromeWebStoreInstallFlow.complete refuses an approval granted to another frame or tab",
+          "status": "passed",
+          "title": "refuses an approval granted to another frame or tab",
+          "duration": 0.1821669999990263,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.complete"],
+          "fullName": "ChromeWebStoreInstallFlow.complete reports an install failure such as an access mismatch and refreshes the store button",
+          "status": "passed",
+          "title": "reports an install failure such as an access mismatch and refreshes the store button",
+          "duration": 0.1634169999997539,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.uninstall"],
+          "fullName": "ChromeWebStoreInstallFlow.uninstall always asks before removing",
+          "status": "passed",
+          "title": "always asks before removing",
+          "duration": 0.31420799999978044,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.uninstall"],
+          "fullName": "ChromeWebStoreInstallFlow.uninstall reports Chrome’s cancel message when declined",
+          "status": "passed",
+          "title": "reports Chrome’s cancel message when declined",
+          "duration": 0.16258399999787798,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["ChromeWebStoreInstallFlow.uninstall"],
+          "fullName": "ChromeWebStoreInstallFlow.uninstall reports an unknown extension",
+          "status": "passed",
+          "title": "reports an unknown extension",
+          "duration": 0.582749999997759,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["chromeWebStoreExtensionStatus"],
+          "fullName": "chromeWebStoreExtensionStatus reports enabled, deprecated or installable",
+          "status": "passed",
+          "title": "reports enabled, deprecated or installable",
+          "duration": 0.33650000000125146,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630988761,
+      "endTime": 1792630988834.5828,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-webstore-install-flow.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs installs into <id>/<version> with the key Electron needs to keep the id",
+          "status": "passed",
+          "title": "installs into <id>/<version> with the key Electron needs to keep the id",
+          "duration": 18244.456291,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs updates side by side, reloads where enabled, then deletes the old version",
+          "status": "passed",
+          "title": "updates side by side, reloads where enabled, then deletes the old version",
+          "duration": 163.00049999999828,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs keeps the old version when the new one fails to load",
+          "status": "passed",
+          "title": "keeps the old version when the new one fails to load",
+          "duration": 542.1509590000023,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs reuses the loaded folder when the same version is installed again",
+          "status": "passed",
+          "title": "reuses the loaded folder when the same version is installed again",
+          "duration": 416.72566700000243,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs removes a fresh install that fails to load",
+          "status": "passed",
+          "title": "removes a fresh install that fails to load",
+          "duration": 900.7064589999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs refuses to replace an unpacked extension with the same id",
+          "status": "passed",
+          "title": "refuses to replace an unpacked extension with the same id",
+          "duration": 337.6671669999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs stages what the prompt shows: name, version and access",
+          "status": "passed",
+          "title": "stages what the prompt shows: name, version and access",
+          "duration": 736.0267499999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs keeps the manifest the prompt showed when the package ships orca-original-manifest.json",
+          "status": "passed",
+          "title": "keeps the manifest the prompt showed when the package ships orca-original-manifest.json",
+          "duration": 332.34649999999965,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["store installs"],
+          "fullName": "store installs keeps the manifest the prompt showed when the package ships ORCA-original-manifest.json",
+          "status": "passed",
+          "title": "keeps the manifest the prompt showed when the package ships ORCA-original-manifest.json",
+          "duration": 483.3414159999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["withBrowserExtensionLock"],
+          "fullName": "withBrowserExtensionLock refuses a second operation on the same extension while one runs",
+          "status": "passed",
+          "title": "refuses a second operation on the same extension while one runs",
+          "duration": 87.28374999999869,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630972923,
+      "endTime": 1792630995168.2837,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-webstore-install.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["compareExtensionVersions"],
+          "fullName": "compareExtensionVersions compares dotted integers numerically",
+          "status": "passed",
+          "title": "compares dotted integers numerically",
+          "duration": 95.8298749999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["parseOmahaUpdateResponse"],
+          "fullName": "parseOmahaUpdateResponse offers newer versions with the package URL, size and checksum",
+          "status": "passed",
+          "title": "offers newer versions with the package URL, size and checksum",
+          "duration": 0.5868749999999636,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["parseOmahaUpdateResponse"],
+          "fullName": "parseOmahaUpdateResponse skips versions that are not newer, unknown apps and malformed replies",
+          "status": "passed",
+          "title": "skips versions that are not newer, unknown apps and malformed replies",
+          "duration": 0.8548749999999927,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["parseOmahaUpdateResponse"],
+          "fullName": "parseOmahaUpdateResponse drops download URLs outside Google hosts",
+          "status": "passed",
+          "title": "drops download URLs outside Google hosts",
+          "duration": 0.7530830000000606,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["checkForBrowserExtensionUpdates"],
+          "fullName": "checkForBrowserExtensionUpdates does not reinstall an extension removed while the update check was running",
+          "status": "passed",
+          "title": "does not reinstall an extension removed while the update check was running",
+          "duration": 215.76262499999984,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792631003414,
+      "endTime": 1792631003727.7627,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-webstore-updater.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["a profile's extension windows"],
+          "fullName": "a profile's extension windows track the main window while extensions are off, so turning them on finds it",
+          "status": "passed",
+          "title": "track the main window while extensions are off, so turning them on finds it",
+          "duration": 1.6717920000000959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["a profile's extension windows"],
+          "fullName": "a profile's extension windows never include another profile's popout, in lookups or events",
+          "status": "passed",
+          "title": "never include another profile's popout, in lookups or events",
+          "duration": 2.873458000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["a profile's extension windows"],
+          "fullName": "a profile's extension windows keep each profile's last-focused popout when another profile's popout takes focus",
+          "status": "passed",
+          "title": "keep each profile's last-focused popout when another profile's popout takes focus",
+          "duration": 1.9314580000000205,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630999293,
+      "endTime": 1792630999299.9314,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-window-model.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["worker API protocol"],
+          "fullName": "worker API protocol refuses web pages, unknown tokens and extensions not loaded in the session",
+          "status": "passed",
+          "title": "refuses web pages, unknown tokens and extensions not loaded in the session",
+          "duration": 197.80379099999845,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["worker API protocol"],
+          "fullName": "worker API protocol runs a call as the token’s extension, keeping undefined arguments and the worker alive",
+          "status": "passed",
+          "title": "runs a call as the token’s extension, keeping undefined arguments and the worker alive",
+          "duration": 16.581999999998516,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["worker API protocol"],
+          "fullName": "worker API protocol streams events, queues them while the worker is stopped, and delivers after restart",
+          "status": "passed",
+          "title": "streams events, queues them while the worker is stopped, and delivers after restart",
+          "duration": 20.17399999999907,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": ["worker API protocol"],
+          "fullName": "worker API protocol holds a worker-start event until the worker registers its listener, then sends it once",
+          "status": "passed",
+          "title": "holds a worker-start event until the worker registers its listener, then sends it once",
+          "duration": 6.681458000002749,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1792630989180,
+      "endTime": 1792630989421.6814,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/kelvinamoaba/orca/workspaces/orca/browser-stuff/src/main/browser/extensions/browser-extension-worker-api-host.test.ts"
+    }
+  ]
+}
