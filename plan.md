@@ -2,9 +2,15 @@
 
 Status: approved-for-autonomous-build. Owner's `C:\Users\ADMIN\.codex\attachments\7d151ad2-5fdb-4b5c-a597-44ae641ec69a\pasted-text-1.txt` supersedes the earlier A1-only scope below. Phase gates 0–6 and experimental Phase 7 are authorized; no push/deploy, global Codex security change, trust expansion, secret extraction, protected-WIP destruction, or FULL_ACCESS. C:\oa is the implementation worktree; ORCA/Control Core remains canonical authority and Codex is a runtime. Each phase requires deterministic, integration, live (where applicable), and fresh-context review evidence before its local checkpoint commit. The older Slice A record below is historical context, not a current scope limit.
 
-## 2026-10-22: chat-first continuation turn (local only, not committed)
+## 2026-10-23: full Vietnamese localization & chat-first daily driver committed
 
-Chat surface is Control-Core-contract driven, never a second authority. `DailyDriverConversation` renders one user turn per conversation branch WorkItem plus the native runtime result for that same item (`itemResults` in `DailyDriverSessionView`, sourced from `collectItemResults` over CodexExecutionSupervisor records; missing execution stays unreported, never invented). Follow-up is `followup` on the same `LogicalWorkSession`; the host adds a `conversation-*` branch under the session root, dispatches it with the persisted session permission, and rejects any request that tries to widen that permission. `start/cancel/reconcile/verify` all target the current (latest non-root) WorkItem, matching what the panel displays, so a follow-up cannot be verified by acting on the original `main` item. Workspace discovery moved to `daily-driver-projects.ts`, item results to `daily-driver-item-results.ts`; Page project/workspace card moved to `DailyDriverWorkspacePicker`. Verification status: node/web/cli typechecks PASS, `oxlint` on touched files PASS, daily-driver host (7 old + 3 new follow-up tests) and session panel tests PASS, 150/150 daily-driver + control-core tests PASS (18 files), localization catalog and extraction gates PASS (`vi` overlay 75/13702 keys — broader Vietnamese coverage still open). Not done: live canaries, Phase 5/6 certification, commit/push — blocked on owner approval and the Codex usage limit.
+1. **Commit `0bce960d`**: chat-first Daily Driver with continuation turns (`alpha: chat-first daily driver with continuation turns`).
+2. **Commit `dc0e79cc`**: full Vietnamese catalog localization (`i18n: complete Vietnamese localization coverage (13702/13702)`).
+   - 100% leaf keys translated (13,702 / 13,702 entries), 0 missing.
+   - Retained and verified all 75 canonical Daily Driver / navigation entries.
+   - Clean verification: `verify-localization-catalog.mjs` PASS, `lazy-locale.test.ts` (7/7) PASS, 35 test files / 293 tests PASS, `oxlint` PASS, all 3 typechecks (node/web/cli) = 0 errors, `electron-vite build` PASS (28.47s).
+3. **Canary preparation**: canary scripts (`config/scripts/orca-alpha-*.mjs`) lint-clean and ready for post-quota execution after Oct 25, 2026.
+4. **Push pending**: local commits `0bce960d` and `dc0e79cc` ready on branch `codex/orca-alpha-cert-short`, awaiting owner confirmation of push remote target.
 
 ## 2026-10-19: permission-boundary repair (approved autonomous scope)
 
