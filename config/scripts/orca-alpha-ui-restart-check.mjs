@@ -37,8 +37,9 @@ try {
   const surface = page.getByTestId('orca-daily-driver')
   await surface.getByTestId('orca-task-result').waitFor({ timeout: 30_000 })
   const actual = await surface.getByTestId('orca-task-result').innerText()
-  if (actual !== expected.result)
+  if (actual !== expected.result) {
     throw new Error('Stored runtime result differs after whole app restart')
+  }
   await page.screenshot({ path: join(evidence, 'phase4-live-restarted.png'), fullPage: true })
   writeFileSync(
     join(evidence, 'phase4-ui-restart-proof.json'),

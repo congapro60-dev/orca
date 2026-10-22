@@ -5,7 +5,9 @@ const port = Number(readFileSync('C:\\oa-run\\DevToolsActivePort', 'utf8').split
 const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`)
 const page = browser.contexts().flatMap((context) => context.pages())
   .find((page) => page.url().includes('index.html'))
-if (!page) throw new Error('ORCA app page is unavailable')
+if (!page) {
+  throw new Error('ORCA app page is unavailable')
+}
 const state = await page.evaluate(() => window.api.codexAccounts.list())
 console.log(JSON.stringify({
   activeAccountId: state.activeAccountId,

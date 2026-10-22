@@ -28,8 +28,9 @@ const app = await _electron.launch({
 let complete = false
 try {
   const actualProfile = await app.evaluate(({ app }) => app.getPath('userData'))
-  if (comparePath(actualProfile) !== comparePath(userData))
+  if (comparePath(actualProfile) !== comparePath(userData)) {
     throw new Error('Unexpected Orca profile')
+  }
   const page = await app.firstWindow({ timeout: 120_000 })
   await page.waitForFunction(
     () => window.__store?.getState().workspaceSessionReady === true,
@@ -65,7 +66,9 @@ try {
   const project = projects.find((row) =>
     row.workspaces.some((workspace) => comparePath(workspace.path) === comparePath(targetPath))
   )
-  if (!project) throw new Error('Approved smoke retry workspace is not registered')
+  if (!project) {
+    throw new Error('Approved smoke retry workspace is not registered')
+  }
   const workspace = project.workspaces.find(
     (row) => comparePath(row.path) === comparePath(targetPath)
   )
@@ -76,7 +79,9 @@ try {
       (nodes, id) => nodes.findIndex((node) => node.getAttribute('data-project-id') === id),
       project.id
     )
-  if (projectIndex < 0) throw new Error('Approved project option is missing')
+  if (projectIndex < 0) {
+    throw new Error('Approved project option is missing')
+  }
   await page.getByRole('option').nth(projectIndex).click()
   await surface.locator('#orca-workspace').click()
   const workspaceIndex = await page
@@ -85,7 +90,9 @@ try {
       (nodes, id) => nodes.findIndex((node) => node.getAttribute('data-workspace-id') === id),
       workspace.id
     )
-  if (workspaceIndex < 0) throw new Error('Approved workspace option is missing')
+  if (workspaceIndex < 0) {
+    throw new Error('Approved workspace option is missing')
+  }
   await page.getByRole('option').nth(workspaceIndex).click()
   const objective =
     'Inspect this repository strictly read-only. Return its absolute root, current HEAD commit, whether Git status is clean, and confirm that you made no modifications. Do not write files.'
@@ -121,6 +128,8 @@ try {
   console.log('PHASE4_VERIFIED_IN_UI')
   complete = true
 } finally {
-  if (!complete) console.log('PHASE4_LIVE_CANARY_NOT_CERTIFIED')
+  if (!complete) {
+    console.log('PHASE4_LIVE_CANARY_NOT_CERTIFIED')
+  }
   await app.close()
 }
